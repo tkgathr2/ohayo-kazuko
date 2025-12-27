@@ -1,18 +1,18 @@
-# 出発見守り和子さん｜アーキテクチャ設計書
+﻿# 蜃ｺ逋ｺ隕句ｮ医ｊ蜥悟ｭ舌＆繧難ｽ懊い繝ｼ繧ｭ繝・け繝√Ε險ｭ險域嶌
 
-## 1. システム概要
+## 1. 繧ｷ繧ｹ繝・Β讎りｦ・
 
-### 1.1 システム構成図
+### 1.1 繧ｷ繧ｹ繝・Β讒区・蝗ｳ
 
 ```mermaid
 graph TB
-    subgraph External["外部サービス"]
+    subgraph External["螟夜Κ繧ｵ繝ｼ繝薙せ"]
         LINE[LINE Messaging API]
         Twilio[Twilio Voice API]
         GoogleSheets[Google Sheets API]
     end
     
-    subgraph System["出発見守り和子さんシステム"]
+    subgraph System["蜃ｺ逋ｺ隕句ｮ医ｊ蜥悟ｭ舌＆繧薙す繧ｹ繝・Β"]
         FastAPI[FastAPI Server]
         Scheduler[APScheduler]
         WebhookHandler[Webhook Handler]
@@ -21,12 +21,12 @@ graph TB
         SpreadsheetService[Spreadsheet Service]
     end
     
-    subgraph Users["ユーザー"]
-        Cast[キャスト]
-        Control[管制]
+    subgraph Users["繝ｦ繝ｼ繧ｶ繝ｼ"]
+        Cast[繧ｭ繝｣繧ｹ繝・
+        Control[邂｡蛻ｶ]
     end
     
-    Cast -->|LINEメッセージ| LINE
+    Cast -->|LINE繝｡繝・そ繝ｼ繧ｸ| LINE
     LINE -->|Webhook| FastAPI
     FastAPI --> WebhookHandler
     WebhookHandler --> NotificationService
@@ -37,157 +37,157 @@ graph TB
     Scheduler --> PhoneService
     Scheduler --> SpreadsheetService
     SpreadsheetService --> GoogleSheets
-    Control -->|手動確認| GoogleSheets
+    Control -->|謇句虚遒ｺ隱鋼 GoogleSheets
 ```
 
-### 1.2 技術スタック
+### 1.2 謚陦薙せ繧ｿ繝・け
 
-| レイヤー | 技術 | バージョン |
+| 繝ｬ繧､繝､繝ｼ | 謚陦・| 繝舌・繧ｸ繝ｧ繝ｳ |
 |---------|------|-----------|
-| バックエンド | FastAPI | 0.104.0+ |
-| 言語 | Python | 3.11+ |
-| スケジューラー | APScheduler | 3.10.0+ |
-| HTTPクライアント | httpx | 最新版 |
-| データ検証 | Pydantic | 2.0+ |
-| ログ | Python logging | 標準ライブラリ |
+| 繝舌ャ繧ｯ繧ｨ繝ｳ繝・| FastAPI | 0.104.0+ |
+| 險隱・| Python | 3.11+ |
+| 繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｩ繝ｼ | APScheduler | 3.10.0+ |
+| HTTP繧ｯ繝ｩ繧､繧｢繝ｳ繝・| httpx | 譛譁ｰ迚・|
+| 繝・・繧ｿ讀懆ｨｼ | Pydantic | 2.0+ |
+| 繝ｭ繧ｰ | Python logging | 讓呎ｺ悶Λ繧､繝悶Λ繝ｪ |
 
 ---
 
-## 2. システムアーキテクチャ
+## 2. 繧ｷ繧ｹ繝・Β繧｢繝ｼ繧ｭ繝・け繝√Ε
 
-### 2.1 レイヤー構成
+### 2.1 繝ｬ繧､繝､繝ｼ讒区・
 
 ```
-┌─────────────────────────────────────┐
-│   Presentation Layer                 │
-│   - LINE Webhook Handler            │
-│   - Health Check Endpoint           │
-└─────────────────────────────────────┘
-                  ↓
-┌─────────────────────────────────────┐
-│   Application Layer                  │
-│   - Notification Service            │
-│   - Phone Service                   │
-│   - Departure Logic Service         │
-│   - Scheduler Service               │
-└─────────────────────────────────────┘
-                  ↓
-┌─────────────────────────────────────┐
-│   Domain Layer                       │
-│   - Cast Model                      │
-│   - DepartureRecord Model           │
-│   - Business Logic                  │
-└─────────────────────────────────────┘
-                  ↓
-┌─────────────────────────────────────┐
-│   Infrastructure Layer               │
-│   - Spreadsheet Service             │
-│   - LINE API Client                 │
-│   - Twilio API Client               │
-│   - Error Handler                   │
-│   - Logger                          │
-└─────────────────────────────────────┘
+笏娯楳笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏・
+笏・  Presentation Layer                 笏・
+笏・  - LINE Webhook Handler            笏・
+笏・  - Health Check Endpoint           笏・
+笏披楳笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏・
+                  竊・
+笏娯楳笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏・
+笏・  Application Layer                  笏・
+笏・  - Notification Service            笏・
+笏・  - Phone Service                   笏・
+笏・  - Departure Logic Service         笏・
+笏・  - Scheduler Service               笏・
+笏披楳笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏・
+                  竊・
+笏娯楳笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏・
+笏・  Domain Layer                       笏・
+笏・  - Cast Model                      笏・
+笏・  - DepartureRecord Model           笏・
+笏・  - Business Logic                  笏・
+笏披楳笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏・
+                  竊・
+笏娯楳笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏・
+笏・  Infrastructure Layer               笏・
+笏・  - Spreadsheet Service             笏・
+笏・  - LINE API Client                 笏・
+笏・  - Twilio API Client               笏・
+笏・  - Error Handler                   笏・
+笏・  - Logger                          笏・
+笏披楳笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏笏・
 ```
 
-### 2.2 ディレクトリ構造
+### 2.2 繝・ぅ繝ｬ繧ｯ繝医Μ讒矩
 
 ```
 kazuko_departure_watch/
-├── app/
-│   ├── __init__.py
-│   ├── main.py                 # FastAPIアプリケーションエントリーポイント
-│   ├── config.py               # 設定管理
-│   ├── models/
-│   │   ├── __init__.py
-│   │   ├── cast.py            # キャストモデル
-│   │   └── departure.py       # 出発管理モデル
-│   ├── services/
-│   │   ├── __init__.py
-│   │   ├── line_service.py    # LINE API連携
-│   │   ├── twilio_service.py  # Twilio API連携
-│   │   ├── spreadsheet_service.py  # Google Sheets連携
-│   │   ├── notification_service.py # 通知サービス
-│   │   ├── phone_service.py   # 電話サービス
-│   │   └── departure_service.py   # 出発判定サービス
-│   ├── handlers/
-│   │   ├── __init__.py
-│   │   └── webhook_handler.py # LINE Webhook処理
-│   ├── schedulers/
-│   │   ├── __init__.py
-│   │   └── job_scheduler.py   # スケジューラー設定
-│   ├── utils/
-│   │   ├── __init__.py
-│   │   ├── logger.py          # ログ設定
-│   │   ├── validators.py      # バリデーション
-│   │   └── error_handler.py   # エラーハンドリング
-│   └── tests/
-│       ├── __init__.py
-│       ├── test_models.py
-│       ├── test_services.py
-│       └── test_handlers.py
-├── logs/                       # ログファイル（.gitignore）
-├── .env.example               # 環境変数テンプレート
-├── .gitignore
-├── requirements.txt           # 依存関係
-├── README.md
-├── SPECIFICATION.md           # 仕様書
-└── ARCHITECTURE.md            # 本ドキュメント
+笏懌楳笏 app/
+笏・  笏懌楳笏 __init__.py
+笏・  笏懌楳笏 main.py                 # FastAPI繧｢繝励Μ繧ｱ繝ｼ繧ｷ繝ｧ繝ｳ繧ｨ繝ｳ繝医Μ繝ｼ繝昴う繝ｳ繝・
+笏・  笏懌楳笏 config.py               # 險ｭ螳夂ｮ｡逅・
+笏・  笏懌楳笏 models/
+笏・  笏・  笏懌楳笏 __init__.py
+笏・  笏・  笏懌楳笏 cast.py            # 繧ｭ繝｣繧ｹ繝医Δ繝・Ν
+笏・  笏・  笏披楳笏 departure.py       # 蜃ｺ逋ｺ邂｡逅・Δ繝・Ν
+笏・  笏懌楳笏 services/
+笏・  笏・  笏懌楳笏 __init__.py
+笏・  笏・  笏懌楳笏 line_service.py    # LINE API騾｣謳ｺ
+笏・  笏・  笏懌楳笏 twilio_service.py  # Twilio API騾｣謳ｺ
+笏・  笏・  笏懌楳笏 spreadsheet_service.py  # Google Sheets騾｣謳ｺ
+笏・  笏・  笏懌楳笏 notification_service.py # 騾夂衍繧ｵ繝ｼ繝薙せ
+笏・  笏・  笏懌楳笏 phone_service.py   # 髮ｻ隧ｱ繧ｵ繝ｼ繝薙せ
+笏・  笏・  笏披楳笏 departure_service.py   # 蜃ｺ逋ｺ蛻､螳壹し繝ｼ繝薙せ
+笏・  笏懌楳笏 handlers/
+笏・  笏・  笏懌楳笏 __init__.py
+笏・  笏・  笏披楳笏 webhook_handler.py # LINE Webhook蜃ｦ逅・
+笏・  笏懌楳笏 schedulers/
+笏・  笏・  笏懌楳笏 __init__.py
+笏・  笏・  笏披楳笏 job_scheduler.py   # 繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｩ繝ｼ險ｭ螳・
+笏・  笏懌楳笏 utils/
+笏・  笏・  笏懌楳笏 __init__.py
+笏・  笏・  笏懌楳笏 logger.py          # 繝ｭ繧ｰ險ｭ螳・
+笏・  笏・  笏懌楳笏 validators.py      # 繝舌Μ繝・・繧ｷ繝ｧ繝ｳ
+笏・  笏・  笏披楳笏 error_handler.py   # 繧ｨ繝ｩ繝ｼ繝上Φ繝峨Μ繝ｳ繧ｰ
+笏・  笏披楳笏 tests/
+笏・      笏懌楳笏 __init__.py
+笏・      笏懌楳笏 test_models.py
+笏・      笏懌楳笏 test_services.py
+笏・      笏披楳笏 test_handlers.py
+笏懌楳笏 logs/                       # 繝ｭ繧ｰ繝輔ぃ繧､繝ｫ・・gitignore・・
+笏懌楳笏 .env.example               # 迺ｰ蠅・､画焚繝・Φ繝励Ξ繝ｼ繝・
+笏懌楳笏 .gitignore
+笏懌楳笏 requirements.txt           # 萓晏ｭ倬未菫・
+笏懌楳笏 README.md
+笏懌楳笏 SPECIFICATION.md           # 莉墓ｧ俶嶌
+笏披楳笏 ARCHITECTURE.md            # 譛ｬ繝峨く繝･繝｡繝ｳ繝・
 ```
 
 ---
 
-## 3. データフロー
+## 3. 繝・・繧ｿ繝輔Ο繝ｼ
 
-### 3.1 前日出発予定時間登録フロー
+### 3.1 蜑肴律蜃ｺ逋ｺ莠亥ｮ壽凾髢鍋匳骭ｲ繝輔Ο繝ｼ
 
 ```mermaid
 sequenceDiagram
-    participant Cast as キャスト
+    participant Cast as 繧ｭ繝｣繧ｹ繝・
     participant LINE as LINE API
     participant Webhook as Webhook Handler
     participant Spreadsheet as Spreadsheet Service
     participant GoogleSheets as Google Sheets
 
-    Cast->>LINE: 出発予定時間登録（ボタンタップ）
-    LINE->>Webhook: Webhookイベント
-    Webhook->>Webhook: バリデーション
-    Webhook->>Spreadsheet: 出発予定時間保存
-    Spreadsheet->>GoogleSheets: データ書き込み
-    GoogleSheets-->>Spreadsheet: 成功
-    Spreadsheet-->>Webhook: 成功
-    Webhook->>LINE: 確認メッセージ送信
-    LINE-->>Cast: 登録完了通知
+    Cast->>LINE: 蜃ｺ逋ｺ莠亥ｮ壽凾髢鍋匳骭ｲ・医・繧ｿ繝ｳ繧ｿ繝・・・・
+    LINE->>Webhook: Webhook繧､繝吶Φ繝・
+    Webhook->>Webhook: 繝舌Μ繝・・繧ｷ繝ｧ繝ｳ
+    Webhook->>Spreadsheet: 蜃ｺ逋ｺ莠亥ｮ壽凾髢謎ｿ晏ｭ・
+    Spreadsheet->>GoogleSheets: 繝・・繧ｿ譖ｸ縺崎ｾｼ縺ｿ
+    GoogleSheets-->>Spreadsheet: 謌仙粥
+    Spreadsheet-->>Webhook: 謌仙粥
+    Webhook->>LINE: 遒ｺ隱阪Γ繝・そ繝ｼ繧ｸ騾∽ｿ｡
+    LINE-->>Cast: 逋ｻ骭ｲ螳御ｺ・夂衍
 ```
 
-### 3.2 当日出発報告フロー
+### 3.2 蠖捺律蜃ｺ逋ｺ蝣ｱ蜻翫ヵ繝ｭ繝ｼ
 
 ```mermaid
 sequenceDiagram
-    participant Cast as キャスト
+    participant Cast as 繧ｭ繝｣繧ｹ繝・
     participant LINE as LINE API
     participant Webhook as Webhook Handler
     participant Departure as Departure Service
     participant Spreadsheet as Spreadsheet Service
     participant GoogleSheets as Google Sheets
 
-    Cast->>LINE: 出発報告ボタン押下
-    LINE->>Webhook: Postbackイベント
-    Webhook->>Webhook: 重複チェック
-    Webhook->>Spreadsheet: 出発予定時間取得
-    Spreadsheet->>GoogleSheets: データ読み込み
-    GoogleSheets-->>Spreadsheet: データ返却
-    Spreadsheet-->>Webhook: 出発予定時間
-    Webhook->>Departure: 判定ロジック実行
-    Departure-->>Webhook: 判定結果（OK/遅れ返）
-    Webhook->>Spreadsheet: 出発時間・判定結果保存
-    Spreadsheet->>GoogleSheets: データ書き込み
-    GoogleSheets-->>Spreadsheet: 成功
-    Spreadsheet-->>Webhook: 成功
-    Webhook->>LINE: 確認メッセージ送信
-    LINE-->>Cast: 報告完了通知
+    Cast->>LINE: 蜃ｺ逋ｺ蝣ｱ蜻翫・繧ｿ繝ｳ謚ｼ荳・
+    LINE->>Webhook: Postback繧､繝吶Φ繝・
+    Webhook->>Webhook: 驥崎､・メ繧ｧ繝・け
+    Webhook->>Spreadsheet: 蜃ｺ逋ｺ莠亥ｮ壽凾髢灘叙蠕・
+    Spreadsheet->>GoogleSheets: 繝・・繧ｿ隱ｭ縺ｿ霎ｼ縺ｿ
+    GoogleSheets-->>Spreadsheet: 繝・・繧ｿ霑泌唆
+    Spreadsheet-->>Webhook: 蜃ｺ逋ｺ莠亥ｮ壽凾髢・
+    Webhook->>Departure: 蛻､螳壹Ο繧ｸ繝・け螳溯｡・
+    Departure-->>Webhook: 蛻､螳夂ｵ先棡・・K/驕・ｌ霑費ｼ・
+    Webhook->>Spreadsheet: 蜃ｺ逋ｺ譎る俣繝ｻ蛻､螳夂ｵ先棡菫晏ｭ・
+    Spreadsheet->>GoogleSheets: 繝・・繧ｿ譖ｸ縺崎ｾｼ縺ｿ
+    GoogleSheets-->>Spreadsheet: 謌仙粥
+    Spreadsheet-->>Webhook: 謌仙粥
+    Webhook->>LINE: 遒ｺ隱阪Γ繝・そ繝ｼ繧ｸ騾∽ｿ｡
+    LINE-->>Cast: 蝣ｱ蜻雁ｮ御ｺ・夂衍
 ```
 
-### 3.3 自動電話フロー
+### 3.3 閾ｪ蜍暮崕隧ｱ繝輔Ο繝ｼ
 
 ```mermaid
 sequenceDiagram
@@ -196,34 +196,34 @@ sequenceDiagram
     participant Spreadsheet as Spreadsheet Service
     participant Phone as Phone Service
     participant Twilio as Twilio API
-    participant Cast as キャスト
+    participant Cast as 繧ｭ繝｣繧ｹ繝・
 
-    Scheduler->>Departure: 出発予定時間チェック
-    Departure->>Spreadsheet: 未報告者リスト取得
-    Spreadsheet-->>Departure: 未報告者リスト
-    Departure->>Phone: 電話①開始（5分おき×5回）
-    loop 5回
-        Phone->>Twilio: 電話発信
-        Twilio->>Cast: 電話着信
-        Phone->>Phone: 5分待機
+    Scheduler->>Departure: 蜃ｺ逋ｺ莠亥ｮ壽凾髢薙メ繧ｧ繝・け
+    Departure->>Spreadsheet: 譛ｪ蝣ｱ蜻願・Μ繧ｹ繝亥叙蠕・
+    Spreadsheet-->>Departure: 譛ｪ蝣ｱ蜻願・Μ繧ｹ繝・
+    Departure->>Phone: 髮ｻ隧ｱ竭髢句ｧ具ｼ・蛻・♀縺催・蝗橸ｼ・
+    loop 5蝗・
+        Phone->>Twilio: 髮ｻ隧ｱ逋ｺ菫｡
+        Twilio->>Cast: 髮ｻ隧ｱ逹菫｡
+        Phone->>Phone: 5蛻・ｾ・ｩ・
     end
-    Phone->>Departure: 電話①完了
-    Departure->>Phone: 電話②開始（3分おき×10回）
-    loop 10回
-        Phone->>Twilio: 電話発信
-        Twilio->>Cast: 電話着信
-        Phone->>Phone: 3分待機
+    Phone->>Departure: 髮ｻ隧ｱ竭螳御ｺ・
+    Departure->>Phone: 髮ｻ隧ｱ竭｡髢句ｧ具ｼ・蛻・♀縺催・0蝗橸ｼ・
+    loop 10蝗・
+        Phone->>Twilio: 髮ｻ隧ｱ逋ｺ菫｡
+        Twilio->>Cast: 髮ｻ隧ｱ逹菫｡
+        Phone->>Phone: 3蛻・ｾ・ｩ・
     end
-    Phone->>Departure: 電話②完了
-    Departure->>Spreadsheet: 出発報告チェック
-    alt 出発報告あり
-        Departure->>Phone: 電話キャンセル
-    else 出発報告なし
-        Departure->>Notification: 管制通知
+    Phone->>Departure: 髮ｻ隧ｱ竭｡螳御ｺ・
+    Departure->>Spreadsheet: 蜃ｺ逋ｺ蝣ｱ蜻翫メ繧ｧ繝・け
+    alt 蜃ｺ逋ｺ蝣ｱ蜻翫≠繧・
+        Departure->>Phone: 髮ｻ隧ｱ繧ｭ繝｣繝ｳ繧ｻ繝ｫ
+    else 蜃ｺ逋ｺ蝣ｱ蜻翫↑縺・
+        Departure->>Notification: 邂｡蛻ｶ騾夂衍
     end
 ```
 
-### 3.4 前日リマインドフロー
+### 3.4 蜑肴律繝ｪ繝槭う繝ｳ繝峨ヵ繝ｭ繝ｼ
 
 ```mermaid
 sequenceDiagram
@@ -231,104 +231,104 @@ sequenceDiagram
     participant Notification as Notification Service
     participant Spreadsheet as Spreadsheet Service
     participant LINE as LINE API
-    participant Cast as キャスト
+    participant Cast as 繧ｭ繝｣繧ｹ繝・
 
-    Scheduler->>Notification: リマインド時刻到達
-    Notification->>Spreadsheet: 未登録者リスト取得
-    Spreadsheet-->>Notification: 未登録者リスト
-    loop 各未登録者
-        Notification->>LINE: LINE通知送信
-        LINE->>Cast: リマインドメッセージ
+    Scheduler->>Notification: 繝ｪ繝槭う繝ｳ繝画凾蛻ｻ蛻ｰ驕・
+    Notification->>Spreadsheet: 譛ｪ逋ｻ骭ｲ閠・Μ繧ｹ繝亥叙蠕・
+    Spreadsheet-->>Notification: 譛ｪ逋ｻ骭ｲ閠・Μ繧ｹ繝・
+    loop 蜷・悴逋ｻ骭ｲ閠・
+        Notification->>LINE: LINE騾夂衍騾∽ｿ｡
+        LINE->>Cast: 繝ｪ繝槭う繝ｳ繝峨Γ繝・そ繝ｼ繧ｸ
     end
-    alt 22:30の場合
-        Notification->>Notification: 管制通知生成
-        Notification->>LINE: 管制へ通知
+    alt 22:30縺ｮ蝣ｴ蜷・
+        Notification->>Notification: 邂｡蛻ｶ騾夂衍逕滓・
+        Notification->>LINE: 邂｡蛻ｶ縺ｸ騾夂衍
     end
 ```
 
 ---
 
-## 4. 状態遷移図
+## 4. 迥ｶ諷矩・遘ｻ蝗ｳ
 
-### 4.1 キャストの状態遷移
+### 4.1 繧ｭ繝｣繧ｹ繝医・迥ｶ諷矩・遘ｻ
 
 ```mermaid
 stateDiagram-v2
-    [*] --> 未登録: 前日開始
-    未登録 --> 登録済み: 出発予定時間登録
-    登録済み --> 待機中: 当日開始
-    待機中 --> OK: 出発報告（予定時間前）
-    待機中 --> 遅れ返: 出発報告（予定時間後）
-    待機中 --> 要確認: 予定時間経過・未報告
-    要確認 --> 電話①実行中: 電話①開始
-    電話①実行中 --> 電話②実行中: 電話①完了
-    電話①実行中 --> OK: 出発報告あり
-    電話①実行中 --> 遅れ返: 出発報告あり（遅れ）
-    電話②実行中 --> 管制対応: 電話②完了・未報告
-    電話②実行中 --> OK: 出発報告あり
-    電話②実行中 --> 遅れ返: 出発報告あり（遅れ）
-    管制対応 --> [*]: 対応完了
-    OK --> [*]: 終了
-    遅れ返 --> [*]: 終了
+    [*] --> 譛ｪ逋ｻ骭ｲ: 蜑肴律髢句ｧ・
+    譛ｪ逋ｻ骭ｲ --> 逋ｻ骭ｲ貂医∩: 蜃ｺ逋ｺ莠亥ｮ壽凾髢鍋匳骭ｲ
+    逋ｻ骭ｲ貂医∩ --> 蠕・ｩ滉ｸｭ: 蠖捺律髢句ｧ・
+    蠕・ｩ滉ｸｭ --> OK: 蜃ｺ逋ｺ蝣ｱ蜻奇ｼ井ｺ亥ｮ壽凾髢灘燕・・
+    蠕・ｩ滉ｸｭ --> 驕・ｌ霑・ 蜃ｺ逋ｺ蝣ｱ蜻奇ｼ井ｺ亥ｮ壽凾髢灘ｾ鯉ｼ・
+    蠕・ｩ滉ｸｭ --> 隕∫｢ｺ隱・ 莠亥ｮ壽凾髢鍋ｵ碁℃繝ｻ譛ｪ蝣ｱ蜻・
+    隕∫｢ｺ隱・--> 髮ｻ隧ｱ竭螳溯｡御ｸｭ: 髮ｻ隧ｱ竭髢句ｧ・
+    髮ｻ隧ｱ竭螳溯｡御ｸｭ --> 髮ｻ隧ｱ竭｡螳溯｡御ｸｭ: 髮ｻ隧ｱ竭螳御ｺ・
+    髮ｻ隧ｱ竭螳溯｡御ｸｭ --> OK: 蜃ｺ逋ｺ蝣ｱ蜻翫≠繧・
+    髮ｻ隧ｱ竭螳溯｡御ｸｭ --> 驕・ｌ霑・ 蜃ｺ逋ｺ蝣ｱ蜻翫≠繧奇ｼ磯≦繧鯉ｼ・
+    髮ｻ隧ｱ竭｡螳溯｡御ｸｭ --> 邂｡蛻ｶ蟇ｾ蠢・ 髮ｻ隧ｱ竭｡螳御ｺ・・譛ｪ蝣ｱ蜻・
+    髮ｻ隧ｱ竭｡螳溯｡御ｸｭ --> OK: 蜃ｺ逋ｺ蝣ｱ蜻翫≠繧・
+    髮ｻ隧ｱ竭｡螳溯｡御ｸｭ --> 驕・ｌ霑・ 蜃ｺ逋ｺ蝣ｱ蜻翫≠繧奇ｼ磯≦繧鯉ｼ・
+    邂｡蛻ｶ蟇ｾ蠢・--> [*]: 蟇ｾ蠢懷ｮ御ｺ・
+    OK --> [*]: 邨ゆｺ・
+    驕・ｌ霑・--> [*]: 邨ゆｺ・
 ```
 
-### 4.2 出発レコードの状態遷移
+### 4.2 蜃ｺ逋ｺ繝ｬ繧ｳ繝ｼ繝峨・迥ｶ諷矩・遘ｻ
 
 ```mermaid
 stateDiagram-v2
-    [*] --> 未登録: 前日開始
-    未登録 --> 登録済み: 出発予定時間登録
-    登録済み --> 報告済み_OK: 出発報告（予定時間前）
-    登録済み --> 報告済み_遅れ返: 出発報告（予定時間後）
-    登録済み --> 要確認: 予定時間経過
-    要確認 --> 電話①実行中: 電話①開始
-    電話①実行中 --> 電話②実行中: 電話①完了
-    電話①実行中 --> 報告済み_OK: 出発報告あり（予定時間前）
-    電話①実行中 --> 報告済み_遅れ返: 出発報告あり（予定時間後）
-    電話②実行中 --> 管制対応: 電話②完了
-    電話②実行中 --> 報告済み_OK: 出発報告あり（予定時間前）
-    電話②実行中 --> 報告済み_遅れ返: 出発報告あり（予定時間後）
-    管制対応 --> 最終確定: 管制が結果記入
-    報告済み_OK --> [*]: 終了
-    報告済み_遅れ返 --> [*]: 終了
-    最終確定 --> [*]: 終了
+    [*] --> 譛ｪ逋ｻ骭ｲ: 蜑肴律髢句ｧ・
+    譛ｪ逋ｻ骭ｲ --> 逋ｻ骭ｲ貂医∩: 蜃ｺ逋ｺ莠亥ｮ壽凾髢鍋匳骭ｲ
+    逋ｻ骭ｲ貂医∩ --> 蝣ｱ蜻頑ｸ医∩_OK: 蜃ｺ逋ｺ蝣ｱ蜻奇ｼ井ｺ亥ｮ壽凾髢灘燕・・
+    逋ｻ骭ｲ貂医∩ --> 蝣ｱ蜻頑ｸ医∩_驕・ｌ霑・ 蜃ｺ逋ｺ蝣ｱ蜻奇ｼ井ｺ亥ｮ壽凾髢灘ｾ鯉ｼ・
+    逋ｻ骭ｲ貂医∩ --> 隕∫｢ｺ隱・ 莠亥ｮ壽凾髢鍋ｵ碁℃
+    隕∫｢ｺ隱・--> 髮ｻ隧ｱ竭螳溯｡御ｸｭ: 髮ｻ隧ｱ竭髢句ｧ・
+    髮ｻ隧ｱ竭螳溯｡御ｸｭ --> 髮ｻ隧ｱ竭｡螳溯｡御ｸｭ: 髮ｻ隧ｱ竭螳御ｺ・
+    髮ｻ隧ｱ竭螳溯｡御ｸｭ --> 蝣ｱ蜻頑ｸ医∩_OK: 蜃ｺ逋ｺ蝣ｱ蜻翫≠繧奇ｼ井ｺ亥ｮ壽凾髢灘燕・・
+    髮ｻ隧ｱ竭螳溯｡御ｸｭ --> 蝣ｱ蜻頑ｸ医∩_驕・ｌ霑・ 蜃ｺ逋ｺ蝣ｱ蜻翫≠繧奇ｼ井ｺ亥ｮ壽凾髢灘ｾ鯉ｼ・
+    髮ｻ隧ｱ竭｡螳溯｡御ｸｭ --> 邂｡蛻ｶ蟇ｾ蠢・ 髮ｻ隧ｱ竭｡螳御ｺ・
+    髮ｻ隧ｱ竭｡螳溯｡御ｸｭ --> 蝣ｱ蜻頑ｸ医∩_OK: 蜃ｺ逋ｺ蝣ｱ蜻翫≠繧奇ｼ井ｺ亥ｮ壽凾髢灘燕・・
+    髮ｻ隧ｱ竭｡螳溯｡御ｸｭ --> 蝣ｱ蜻頑ｸ医∩_驕・ｌ霑・ 蜃ｺ逋ｺ蝣ｱ蜻翫≠繧奇ｼ井ｺ亥ｮ壽凾髢灘ｾ鯉ｼ・
+    邂｡蛻ｶ蟇ｾ蠢・--> 譛邨ら｢ｺ螳・ 邂｡蛻ｶ縺檎ｵ先棡險伜・
+    蝣ｱ蜻頑ｸ医∩_OK --> [*]: 邨ゆｺ・
+    蝣ｱ蜻頑ｸ医∩_驕・ｌ霑・--> [*]: 邨ゆｺ・
+    譛邨ら｢ｺ螳・--> [*]: 邨ゆｺ・
 ```
 
 ---
 
-## 5. サービス設計
+## 5. 繧ｵ繝ｼ繝薙せ險ｭ險・
 
 ### 5.1 LINE Service
 
-**責務**:
-- LINE Messaging APIとの通信
-- メッセージ送信
-- Webhookイベントの処理
+**雋ｬ蜍・*:
+- LINE Messaging API縺ｨ縺ｮ騾壻ｿ｡
+- 繝｡繝・そ繝ｼ繧ｸ騾∽ｿ｡
+- Webhook繧､繝吶Φ繝医・蜃ｦ逅・
 
-**主要メソッド**:
+**荳ｻ隕√Γ繧ｽ繝・ラ**:
 - `send_message(line_id: str, message: str) -> bool`
 - `send_notification(line_id: str, notification: dict) -> bool`
 - `verify_signature(body: bytes, signature: str) -> bool`
 
 ### 5.2 Twilio Service
 
-**責務**:
-- Twilio Voice APIとの通信
-- 電話発信
-- 電話結果の記録
+**雋ｬ蜍・*:
+- Twilio Voice API縺ｨ縺ｮ騾壻ｿ｡
+- 髮ｻ隧ｱ逋ｺ菫｡
+- 髮ｻ隧ｱ邨先棡縺ｮ險倬鹸
 
-**主要メソッド**:
+**荳ｻ隕√Γ繧ｽ繝・ラ**:
 - `make_call(phone_number: str, message: str) -> dict`
 - `cancel_call(call_sid: str) -> bool`
 
 ### 5.3 Spreadsheet Service
 
-**責務**:
-- Google Sheets APIとの通信
-- データの読み書き
-- データのバリデーション
+**雋ｬ蜍・*:
+- Google Sheets API縺ｨ縺ｮ騾壻ｿ｡
+- 繝・・繧ｿ縺ｮ隱ｭ縺ｿ譖ｸ縺・
+- 繝・・繧ｿ縺ｮ繝舌Μ繝・・繧ｷ繝ｧ繝ｳ
 
-**主要メソッド**:
+**荳ｻ隕√Γ繧ｽ繝・ラ**:
 - `get_casts() -> List[Cast]`
 - `get_departure_records(date: date) -> List[DepartureRecord]`
 - `update_departure_record(record: DepartureRecord) -> bool`
@@ -336,82 +336,82 @@ stateDiagram-v2
 
 ### 5.4 Notification Service
 
-**責務**:
-- 通知の送信管理
-- 未登録者・未報告者の判定
-- 管制通知の生成
+**雋ｬ蜍・*:
+- 騾夂衍縺ｮ騾∽ｿ｡邂｡逅・
+- 譛ｪ逋ｻ骭ｲ閠・・譛ｪ蝣ｱ蜻願・・蛻､螳・
+- 邂｡蛻ｶ騾夂衍縺ｮ逕滓・
 
-**主要メソッド**:
+**荳ｻ隕√Γ繧ｽ繝・ラ**:
 - `send_reminder_to_unregistered() -> int`
 - `notify_control_unregistered() -> bool`
 - `send_emergency_alert(record: DepartureRecord) -> bool`
 
 ### 5.5 Phone Service
 
-**責務**:
-- 電話発信のスケジューリング
-- 電話フローの管理
-- 電話結果の記録
+**雋ｬ蜍・*:
+- 髮ｻ隧ｱ逋ｺ菫｡縺ｮ繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｪ繝ｳ繧ｰ
+- 髮ｻ隧ｱ繝輔Ο繝ｼ縺ｮ邂｡逅・
+- 髮ｻ隧ｱ邨先棡縺ｮ險倬鹸
 
-**主要メソッド**:
+**荳ｻ隕√Γ繧ｽ繝・ラ**:
 - `start_phone_call_phase1(record: DepartureRecord) -> None`
 - `start_phone_call_phase2(record: DepartureRecord) -> None`
 - `cancel_phone_calls(record: DepartureRecord) -> None`
 
 ### 5.6 Departure Service
 
-**責務**:
-- 出発判定ロジック
-- 出発時間と予定時間の比較
-- 状態遷移の管理
+**雋ｬ蜍・*:
+- 蜃ｺ逋ｺ蛻､螳壹Ο繧ｸ繝・け
+- 蜃ｺ逋ｺ譎る俣縺ｨ莠亥ｮ壽凾髢薙・豈碑ｼ・
+- 迥ｶ諷矩・遘ｻ縺ｮ邂｡逅・
 
-**主要メソッド**:
+**荳ｻ隕√Γ繧ｽ繝・ラ**:
 - `judge_departure(actual_time: datetime, scheduled_time: datetime) -> DepartureStatus`
 - `check_departure_status(record: DepartureRecord) -> DepartureStatus`
 - `should_start_phone_call(record: DepartureRecord) -> bool`
 
 ---
 
-## 6. エラーハンドリング戦略
+## 6. 繧ｨ繝ｩ繝ｼ繝上Φ繝峨Μ繝ｳ繧ｰ謌ｦ逡･
 
-### 6.1 エラーハンドリングフロー
+### 6.1 繧ｨ繝ｩ繝ｼ繝上Φ繝峨Μ繝ｳ繧ｰ繝輔Ο繝ｼ
 
 ```mermaid
 graph TB
-    Start[API呼び出し] --> Try{試行}
-    Try -->|成功| Success[成功]
-    Try -->|エラー| CheckType{エラー種類}
-    CheckType -->|400系| LogError[ログ記録・終了]
-    CheckType -->|401/403| Alert[アラート通知・終了]
-    CheckType -->|429/500/503| Retry{リトライ可能?}
-    Retry -->|Yes| Backoff[指数バックオフ]
+    Start[API蜻ｼ縺ｳ蜃ｺ縺余 --> Try{隧ｦ陦迎
+    Try -->|謌仙粥| Success[謌仙粥]
+    Try -->|繧ｨ繝ｩ繝ｼ| CheckType{繧ｨ繝ｩ繝ｼ遞ｮ鬘栲
+    CheckType -->|400邉ｻ| LogError[繝ｭ繧ｰ險倬鹸繝ｻ邨ゆｺ・
+    CheckType -->|401/403| Alert[繧｢繝ｩ繝ｼ繝磯夂衍繝ｻ邨ゆｺ・
+    CheckType -->|429/500/503| Retry{繝ｪ繝医Λ繧､蜿ｯ閭ｽ?}
+    Retry -->|Yes| Backoff[謖・焚繝舌ャ繧ｯ繧ｪ繝評
     Backoff --> Try
     Retry -->|No| LogError
-    CheckType -->|タイムアウト| Retry
-    Success --> End[処理完了]
+    CheckType -->|繧ｿ繧､繝繧｢繧ｦ繝・ Retry
+    Success --> End[蜃ｦ逅・ｮ御ｺ・
     LogError --> End
     Alert --> End
 ```
 
-### 6.2 リトライ戦略
+### 6.2 繝ｪ繝医Λ繧､謌ｦ逡･
 
-| API | 最大リトライ回数 | バックオフ戦略 |
+| API | 譛螟ｧ繝ｪ繝医Λ繧､蝗樊焚 | 繝舌ャ繧ｯ繧ｪ繝墓姶逡･ |
 |-----|----------------|---------------|
-| LINE API | 3回 | 指数バックオフ（1s, 2s, 4s） |
-| Twilio API | 3回 | 指数バックオフ（1s, 2s, 4s） |
-| Google Sheets API | 5回 | 指数バックオフ（1s, 2s, 4s, 8s, 16s） |
+| LINE API | 3蝗・| 謖・焚繝舌ャ繧ｯ繧ｪ繝包ｼ・s, 2s, 4s・・|
+| Twilio API | 3蝗・| 謖・焚繝舌ャ繧ｯ繧ｪ繝包ｼ・s, 2s, 4s・・|
+| Google Sheets API | 5蝗・| 謖・焚繝舌ャ繧ｯ繧ｪ繝包ｼ・s, 2s, 4s, 8s, 16s・・|
 
 ---
 
-## 7. スケジューリング設計
+## 7. 繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｪ繝ｳ繧ｰ險ｭ險・
 
-### 7.1 スケジューラー構成
+### 7.1 繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｩ繝ｼ讒区・
 
 ```python
-# スケジューラー設定例
+# 繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｩ繝ｼ險ｭ螳壻ｾ・
 scheduler = AsyncIOScheduler(timezone='Asia/Tokyo')
 
-# 前日リマインド
+# 蜑肴律繝ｪ繝槭う繝ｳ繝・
 scheduler.add_job(
     send_reminder_20,
     'cron',
@@ -420,21 +420,21 @@ scheduler.add_job(
     timezone='Asia/Tokyo'
 )
 
-# 当日電話（動的スケジューリング）
-# 各キャストの出発予定時間に基づいて動的に生成
+# 蠖捺律髮ｻ隧ｱ・亥虚逧・せ繧ｱ繧ｸ繝･繝ｼ繝ｪ繝ｳ繧ｰ・・
+# 蜷・く繝｣繧ｹ繝医・蜃ｺ逋ｺ莠亥ｮ壽凾髢薙↓蝓ｺ縺･縺・※蜍慕噪縺ｫ逕滓・
 ```
 
-### 7.2 動的スケジューリング
+### 7.2 蜍慕噪繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｪ繝ｳ繧ｰ
 
-- 前日24:00に、翌日の出発予定時間を読み込み
-- 各キャストの出発予定時間の1分後に電話①をスケジュール
-- 電話①完了後、電話②をスケジュール
+- 蜑肴律24:00縺ｫ縲∫ｿ梧律縺ｮ蜃ｺ逋ｺ莠亥ｮ壽凾髢薙ｒ隱ｭ縺ｿ霎ｼ縺ｿ
+- 蜷・く繝｣繧ｹ繝医・蜃ｺ逋ｺ莠亥ｮ壽凾髢薙・1蛻・ｾ後↓髮ｻ隧ｱ竭繧偵せ繧ｱ繧ｸ繝･繝ｼ繝ｫ
+- 髮ｻ隧ｱ竭螳御ｺ・ｾ後・崕隧ｱ竭｡繧偵せ繧ｱ繧ｸ繝･繝ｼ繝ｫ
 
 ---
 
-## 8. セキュリティ設計
+## 8. 繧ｻ繧ｭ繝･繝ｪ繝・ぅ險ｭ險・
 
-### 8.1 認証フロー
+### 8.1 隱崎ｨｼ繝輔Ο繝ｼ
 
 ```mermaid
 sequenceDiagram
@@ -442,90 +442,91 @@ sequenceDiagram
     participant Webhook as Webhook Handler
     participant Validator as Signature Validator
 
-    LINE->>Webhook: Webhookリクエスト（署名付き）
-    Webhook->>Validator: 署名検証
-    Validator->>Validator: 署名計算
-    alt 署名一致
-        Validator-->>Webhook: 検証成功
-        Webhook->>Webhook: 処理実行
-    else 署名不一致
-        Validator-->>Webhook: 検証失敗
-        Webhook->>Webhook: リクエスト拒否（401）
+    LINE->>Webhook: Webhook繝ｪ繧ｯ繧ｨ繧ｹ繝茨ｼ育ｽｲ蜷堺ｻ倥″・・
+    Webhook->>Validator: 鄂ｲ蜷肴､懆ｨｼ
+    Validator->>Validator: 鄂ｲ蜷崎ｨ育ｮ・
+    alt 鄂ｲ蜷堺ｸ閾ｴ
+        Validator-->>Webhook: 讀懆ｨｼ謌仙粥
+        Webhook->>Webhook: 蜃ｦ逅・ｮ溯｡・
+    else 鄂ｲ蜷堺ｸ堺ｸ閾ｴ
+        Validator-->>Webhook: 讀懆ｨｼ螟ｱ謨・
+        Webhook->>Webhook: 繝ｪ繧ｯ繧ｨ繧ｹ繝域拠蜷ｦ・・01・・
     end
 ```
 
-### 8.2 データ保護
+### 8.2 繝・・繧ｿ菫晁ｭｷ
 
-- 環境変数でAPIキーを管理
-- ログには個人情報を含めない（ハッシュ化）
-- HTTPS通信を必須とする
+- 迺ｰ蠅・､画焚縺ｧAPI繧ｭ繝ｼ繧堤ｮ｡逅・
+- 繝ｭ繧ｰ縺ｫ縺ｯ蛟倶ｺｺ諠・ｱ繧貞性繧√↑縺・ｼ医ワ繝・す繝･蛹厄ｼ・
+- HTTPS騾壻ｿ｡繧貞ｿ・医→縺吶ｋ
 
 ---
 
-## 9. パフォーマンス要件
+## 9. 繝代ヵ繧ｩ繝ｼ繝槭Φ繧ｹ隕∽ｻｶ
 
-### 9.1 応答時間目標
+### 9.1 蠢懃ｭ疲凾髢鍋岼讓・
 
-| 処理 | 目標応答時間 |
+| 蜃ｦ逅・| 逶ｮ讓吝ｿ懃ｭ疲凾髢・|
 |------|------------|
-| LINE通知送信 | 3秒以内 |
-| スプレッドシート読み込み | 5秒以内 |
-| スプレッドシート書き込み | 5秒以内 |
-| 電話発信 | 10秒以内 |
+| LINE騾夂衍騾∽ｿ｡ | 3遘剃ｻ･蜀・|
+| 繧ｹ繝励Ξ繝・ラ繧ｷ繝ｼ繝郁ｪｭ縺ｿ霎ｼ縺ｿ | 5遘剃ｻ･蜀・|
+| 繧ｹ繝励Ξ繝・ラ繧ｷ繝ｼ繝域嶌縺崎ｾｼ縺ｿ | 5遘剃ｻ･蜀・|
+| 髮ｻ隧ｱ逋ｺ菫｡ | 10遘剃ｻ･蜀・|
 
-### 9.2 スループット
+### 9.2 繧ｹ繝ｫ繝ｼ繝励ャ繝・
 
-- 同時処理可能なLINE通知: 100件/秒
-- 同時処理可能な電話発信: 10件/秒
-
----
-
-## 10. 監視・ログ設計
-
-### 10.1 ログ出力箇所
-
-- API呼び出し（成功・失敗）
-- スケジューラー実行
-- エラー発生
-- 重要な状態遷移
-
-### 10.2 監視メトリクス
-
-- API呼び出し回数
-- APIエラー率
-- スケジューラー実行成功率
-- システム稼働率
+- 蜷梧凾蜃ｦ逅・庄閭ｽ縺ｪLINE騾夂衍: 100莉ｶ/遘・
+- 蜷梧凾蜃ｦ逅・庄閭ｽ縺ｪ髮ｻ隧ｱ逋ｺ菫｡: 10莉ｶ/遘・
 
 ---
 
-## 11. デプロイ設計
+## 10. 逶｣隕悶・繝ｭ繧ｰ險ｭ險・
 
-### 11.1 デプロイ構成
+### 10.1 繝ｭ繧ｰ蜃ｺ蜉帷ｮ・園
+
+- API蜻ｼ縺ｳ蜃ｺ縺暦ｼ域・蜉溘・螟ｱ謨暦ｼ・
+- 繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｩ繝ｼ螳溯｡・
+- 繧ｨ繝ｩ繝ｼ逋ｺ逕・
+- 驥崎ｦ√↑迥ｶ諷矩・遘ｻ
+
+### 10.2 逶｣隕悶Γ繝医Μ繧ｯ繧ｹ
+
+- API蜻ｼ縺ｳ蜃ｺ縺怜屓謨ｰ
+- API繧ｨ繝ｩ繝ｼ邇・
+- 繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｩ繝ｼ螳溯｡梧・蜉溽紫
+- 繧ｷ繧ｹ繝・Β遞ｼ蜒咲紫
+
+---
+
+## 11. 繝・・繝ｭ繧､險ｭ險・
+
+### 11.1 繝・・繝ｭ繧､讒区・
 
 ```
-本番環境
-├── アプリケーションサーバー
-│   ├── FastAPIアプリケーション
-│   ├── APScheduler
-│   └── ログファイル
-└── 外部サービス
-    ├── LINE Messaging API
-    ├── Twilio Voice API
-    └── Google Sheets API
+譛ｬ逡ｪ迺ｰ蠅・
+笏懌楳笏 繧｢繝励Μ繧ｱ繝ｼ繧ｷ繝ｧ繝ｳ繧ｵ繝ｼ繝舌・
+笏・  笏懌楳笏 FastAPI繧｢繝励Μ繧ｱ繝ｼ繧ｷ繝ｧ繝ｳ
+笏・  笏懌楳笏 APScheduler
+笏・  笏披楳笏 繝ｭ繧ｰ繝輔ぃ繧､繝ｫ
+笏披楳笏 螟夜Κ繧ｵ繝ｼ繝薙せ
+    笏懌楳笏 LINE Messaging API
+    笏懌楳笏 Twilio Voice API
+    笏披楳笏 Google Sheets API
 ```
 
-### 11.2 起動シーケンス
+### 11.2 襍ｷ蜍輔す繝ｼ繧ｱ繝ｳ繧ｹ
 
-1. 環境変数読み込み
-2. ログ設定
-3. データベース（スプレッドシート）接続確認
-4. スケジューラー初期化
-5. FastAPIサーバー起動
-6. ヘルスチェック
+1. 迺ｰ蠅・､画焚隱ｭ縺ｿ霎ｼ縺ｿ
+2. 繝ｭ繧ｰ險ｭ螳・
+3. 繝・・繧ｿ繝吶・繧ｹ・医せ繝励Ξ繝・ラ繧ｷ繝ｼ繝茨ｼ画磁邯夂｢ｺ隱・
+4. 繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｩ繝ｼ蛻晄悄蛹・
+5. FastAPI繧ｵ繝ｼ繝舌・襍ｷ蜍・
+6. 繝倥Ν繧ｹ繝√ぉ繝・け
 
 ---
 
-**アーキテクチャ設計書バージョン**: 1.0  
-**最終更新日**: 2024-01-15  
-**作成者**: システム開発チーム
+**繧｢繝ｼ繧ｭ繝・け繝√Ε險ｭ險域嶌繝舌・繧ｸ繝ｧ繝ｳ**: 1.0  
+**譛邨よ峩譁ｰ譌･**: 2024-01-15  
+**菴懈・閠・*: 繧ｷ繧ｹ繝・Β髢狗匱繝√・繝
+
 
