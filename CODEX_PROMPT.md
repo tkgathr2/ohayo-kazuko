@@ -1,69 +1,69 @@
-# 出発見守り和子さん - コーデックス実装プロンプト
+﻿# 蜃ｺ逋ｺ隕句ｮ医ｊ蜥悟ｭ舌＆繧・- 繧ｳ繝ｼ繝・ャ繧ｯ繧ｹ螳溯｣・・繝ｭ繝ｳ繝励ヨ
 
-## プロジェクト概要
+## 繝励Ο繧ｸ繧ｧ繧ｯ繝域ｦりｦ・
 
-出勤前の確認を自動化するシステム「出発見守り和子さん」を実装してください。
+蜃ｺ蜍､蜑阪・遒ｺ隱阪ｒ閾ｪ蜍募喧縺吶ｋ繧ｷ繧ｹ繝・Β縲悟・逋ｺ隕句ｮ医ｊ蜥悟ｭ舌＆繧薙阪ｒ螳溯｣・＠縺ｦ縺上□縺輔＞縲・
 
-**基本方針**:
-- 判定は出発報告ボタンを押した時刻のみを使用
-- 電話の着信・応答・留守電は判定に使わない
-- 管制は最終段階のみ介入
+**蝓ｺ譛ｬ譁ｹ驥・*:
+- 蛻､螳壹・蜃ｺ逋ｺ蝣ｱ蜻翫・繧ｿ繝ｳ繧呈款縺励◆譎ょ綾縺ｮ縺ｿ繧剃ｽｿ逕ｨ
+- 髮ｻ隧ｱ縺ｮ逹菫｡繝ｻ蠢懃ｭ斐・逡吝ｮ磯崕縺ｯ蛻､螳壹↓菴ｿ繧上↑縺・
+- 邂｡蛻ｶ縺ｯ譛邨よｮｵ髫弱・縺ｿ莉句・
 
-## 技術スタック
+## 謚陦薙せ繧ｿ繝・け
 
-- **バックエンド**: FastAPI 0.104.0+
-- **言語**: Python 3.11+
-- **スケジューラー**: APScheduler 3.10.0+
-- **HTTPクライアント**: httpx
-- **データ検証**: Pydantic 2.0+
-- **外部API**: LINE Messaging API v2, Twilio Voice API, Google Sheets API v4
+- **繝舌ャ繧ｯ繧ｨ繝ｳ繝・*: FastAPI 0.104.0+
+- **險隱・*: Python 3.11+
+- **繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｩ繝ｼ**: APScheduler 3.10.0+
+- **HTTP繧ｯ繝ｩ繧､繧｢繝ｳ繝・*: httpx
+- **繝・・繧ｿ讀懆ｨｼ**: Pydantic 2.0+
+- **螟夜ΚAPI**: LINE Messaging API v2, Twilio Voice API, Google Sheets API v4
 
-## ディレクトリ構造
+## 繝・ぅ繝ｬ繧ｯ繝医Μ讒矩
 
 ```
 kazuko_departure_watch/
-├── app/
-│   ├── __init__.py
-│   ├── main.py                 # FastAPIアプリケーションエントリーポイント
-│   ├── config.py               # 設定管理
-│   ├── models/
-│   │   ├── __init__.py
-│   │   ├── cast.py            # キャストモデル
-│   │   └── departure.py       # 出発管理モデル
-│   ├── services/
-│   │   ├── __init__.py
-│   │   ├── line_service.py    # LINE API連携
-│   │   ├── twilio_service.py  # Twilio API連携
-│   │   ├── spreadsheet_service.py  # Google Sheets連携
-│   │   ├── notification_service.py # 通知サービス
-│   │   ├── phone_service.py   # 電話サービス
-│   │   └── departure_service.py   # 出発判定サービス
-│   ├── handlers/
-│   │   ├── __init__.py
-│   │   └── webhook_handler.py # LINE Webhook処理
-│   ├── schedulers/
-│   │   ├── __init__.py
-│   │   └── job_scheduler.py   # スケジューラー設定
-│   ├── utils/
-│   │   ├── __init__.py
-│   │   ├── logger.py          # ログ設定
-│   │   ├── validators.py      # バリデーション
-│   │   └── error_handler.py   # エラーハンドリング
-│   └── tests/
-│       ├── __init__.py
-│       ├── test_models.py
-│       ├── test_services.py
-│       └── test_handlers.py
-├── logs/                       # ログファイル（.gitignore）
-├── .env.example               # 環境変数テンプレート
-├── .gitignore
-├── requirements.txt           # 依存関係
-└── README.md
+笏懌楳笏 app/
+笏・  笏懌楳笏 __init__.py
+笏・  笏懌楳笏 main.py                 # FastAPI繧｢繝励Μ繧ｱ繝ｼ繧ｷ繝ｧ繝ｳ繧ｨ繝ｳ繝医Μ繝ｼ繝昴う繝ｳ繝・
+笏・  笏懌楳笏 config.py               # 險ｭ螳夂ｮ｡逅・
+笏・  笏懌楳笏 models/
+笏・  笏・  笏懌楳笏 __init__.py
+笏・  笏・  笏懌楳笏 cast.py            # 繧ｭ繝｣繧ｹ繝医Δ繝・Ν
+笏・  笏・  笏披楳笏 departure.py       # 蜃ｺ逋ｺ邂｡逅・Δ繝・Ν
+笏・  笏懌楳笏 services/
+笏・  笏・  笏懌楳笏 __init__.py
+笏・  笏・  笏懌楳笏 line_service.py    # LINE API騾｣謳ｺ
+笏・  笏・  笏懌楳笏 twilio_service.py  # Twilio API騾｣謳ｺ
+笏・  笏・  笏懌楳笏 spreadsheet_service.py  # Google Sheets騾｣謳ｺ
+笏・  笏・  笏懌楳笏 notification_service.py # 騾夂衍繧ｵ繝ｼ繝薙せ
+笏・  笏・  笏懌楳笏 phone_service.py   # 髮ｻ隧ｱ繧ｵ繝ｼ繝薙せ
+笏・  笏・  笏披楳笏 departure_service.py   # 蜃ｺ逋ｺ蛻､螳壹し繝ｼ繝薙せ
+笏・  笏懌楳笏 handlers/
+笏・  笏・  笏懌楳笏 __init__.py
+笏・  笏・  笏披楳笏 webhook_handler.py # LINE Webhook蜃ｦ逅・
+笏・  笏懌楳笏 schedulers/
+笏・  笏・  笏懌楳笏 __init__.py
+笏・  笏・  笏披楳笏 job_scheduler.py   # 繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｩ繝ｼ險ｭ螳・
+笏・  笏懌楳笏 utils/
+笏・  笏・  笏懌楳笏 __init__.py
+笏・  笏・  笏懌楳笏 logger.py          # 繝ｭ繧ｰ險ｭ螳・
+笏・  笏・  笏懌楳笏 validators.py      # 繝舌Μ繝・・繧ｷ繝ｧ繝ｳ
+笏・  笏・  笏披楳笏 error_handler.py   # 繧ｨ繝ｩ繝ｼ繝上Φ繝峨Μ繝ｳ繧ｰ
+笏・  笏披楳笏 tests/
+笏・      笏懌楳笏 __init__.py
+笏・      笏懌楳笏 test_models.py
+笏・      笏懌楳笏 test_services.py
+笏・      笏披楳笏 test_handlers.py
+笏懌楳笏 logs/                       # 繝ｭ繧ｰ繝輔ぃ繧､繝ｫ・・gitignore・・
+笏懌楳笏 .env.example               # 迺ｰ蠅・､画焚繝・Φ繝励Ξ繝ｼ繝・
+笏懌楳笏 .gitignore
+笏懌楳笏 requirements.txt           # 萓晏ｭ倬未菫・
+笏披楳笏 README.md
 ```
 
-## データモデル
+## 繝・・繧ｿ繝｢繝・Ν
 
-### Cast（キャスト）
+### Cast・医く繝｣繧ｹ繝茨ｼ・
 
 ```python
 from datetime import time
@@ -71,15 +71,15 @@ from typing import Optional
 from pydantic import BaseModel, Field, validator
 
 class Cast(BaseModel):
-    name: str = Field(..., max_length=100, description="氏名")
+    name: str = Field(..., max_length=100, description="豌丞錐")
     line_id: str = Field(..., max_length=100, regex=r'^[a-zA-Z0-9_]+$', description="LINE_ID")
-    phone_number: str = Field(..., regex=r'^\+[1-9]\d{1,14}$', description="電話番号（E.164形式）")
-    default_departure_time: Optional[time] = Field(None, description="通常出発予定時間（HH:MM、5分単位）")
-    department: Optional[str] = Field(None, max_length=100, description="所属")
-    notes: Optional[str] = Field(None, max_length=500, description="備考")
+    phone_number: str = Field(..., regex=r'^\+[1-9]\d{1,14}$', description="髮ｻ隧ｱ逡ｪ蜿ｷ・・.164蠖｢蠑擾ｼ・)
+    default_departure_time: Optional[time] = Field(None, description="騾壼ｸｸ蜃ｺ逋ｺ莠亥ｮ壽凾髢難ｼ・H:MM縲・蛻・腰菴搾ｼ・)
+    department: Optional[str] = Field(None, max_length=100, description="謇螻・)
+    notes: Optional[str] = Field(None, max_length=500, description="蛯呵・)
 ```
 
-### DepartureRecord（出発管理）
+### DepartureRecord・亥・逋ｺ邂｡逅・ｼ・
 
 ```python
 from datetime import date, datetime
@@ -89,44 +89,44 @@ from enum import Enum
 
 class DepartureStatus(str, Enum):
     OK = "OK"
-    DELAYED = "遅れ返"
-    NEED_CHECK = "要確認"
-    CONTROL = "管制対応"
+    DELAYED = "驕・ｌ霑・
+    NEED_CHECK = "隕∫｢ｺ隱・
+    CONTROL = "邂｡蛻ｶ蟇ｾ蠢・
 
 class FinalResult(str, Enum):
-    ATTENDANCE_OK = "出勤OK"
-    LATE = "遅刻"
-    FILLED = "穴埋め"
-    UNDETERMINED = "未確定"
+    ATTENDANCE_OK = "蜃ｺ蜍､OK"
+    LATE = "驕・綾"
+    FILLED = "遨ｴ蝓九ａ"
+    UNDETERMINED = "譛ｪ遒ｺ螳・
 
 class DepartureRecord(BaseModel):
-    date: date = Field(..., description="日付（YYYY-MM-DD）")
-    name: str = Field(..., max_length=100, description="氏名")
+    date: date = Field(..., description="譌･莉假ｼ・YYY-MM-DD・・)
+    name: str = Field(..., max_length=100, description="豌丞錐")
     line_id: str = Field(..., max_length=100, description="LINE_ID")
-    scheduled_departure_time: Optional[datetime] = Field(None, description="出発予定時間（JST）")
-    actual_departure_time: Optional[datetime] = Field(None, description="出発時間（JST、ミリ秒まで）")
-    departure_status: Optional[DepartureStatus] = Field(None, description="出発判定")
-    phone_call_count: int = Field(0, ge=0, le=2, description="出発電話回数（0/1/2）")
-    final_result: Optional[FinalResult] = Field(None, description="最終結果")
-    control_notes: Optional[str] = Field(None, max_length=1000, description="管制メモ")
+    scheduled_departure_time: Optional[datetime] = Field(None, description="蜃ｺ逋ｺ莠亥ｮ壽凾髢難ｼ・ST・・)
+    actual_departure_time: Optional[datetime] = Field(None, description="蜃ｺ逋ｺ譎る俣・・ST縲√Α繝ｪ遘偵∪縺ｧ・・)
+    departure_status: Optional[DepartureStatus] = Field(None, description="蜃ｺ逋ｺ蛻､螳・)
+    phone_call_count: int = Field(0, ge=0, le=2, description="蜃ｺ逋ｺ髮ｻ隧ｱ蝗樊焚・・/1/2・・)
+    final_result: Optional[FinalResult] = Field(None, description="譛邨らｵ先棡")
+    control_notes: Optional[str] = Field(None, max_length=1000, description="邂｡蛻ｶ繝｡繝｢")
 ```
 
-## 環境変数
+## 迺ｰ蠅・､画焚
 
-### 必須環境変数
+### 蠢・育腸蠅・､画焚
 
 ```python
-LINE_CHANNEL_ACCESS_TOKEN: str  # LINE Messaging APIのアクセストークン
-LINE_CHANNEL_SECRET: str        # LINE Messaging APIのシークレット
-TWILIO_ACCOUNT_SID: str         # TwilioアカウントSID（正規表現: ^AC[a-z0-9]{32}$）
-TWILIO_AUTH_TOKEN: str          # Twilio認証トークン
-TWILIO_PHONE_NUMBER: str        # Twilio発信元電話番号（E.164形式）
-GOOGLE_SHEETS_CREDENTIALS_JSON: str  # Google Sheets API認証情報（JSON文字列）
-GOOGLE_SHEETS_SPREADSHEET_ID: str    # スプレッドシートID
-TZ: str = "Asia/Tokyo"          # タイムゾーン
+LINE_CHANNEL_ACCESS_TOKEN: str  # LINE Messaging API縺ｮ繧｢繧ｯ繧ｻ繧ｹ繝医・繧ｯ繝ｳ
+LINE_CHANNEL_SECRET: str        # LINE Messaging API縺ｮ繧ｷ繝ｼ繧ｯ繝ｬ繝・ヨ
+TWILIO_ACCOUNT_SID: str         # Twilio繧｢繧ｫ繧ｦ繝ｳ繝・ID・域ｭ｣隕剰｡ｨ迴ｾ: ^AC[a-z0-9]{32}$・・
+TWILIO_AUTH_TOKEN: str          # Twilio隱崎ｨｼ繝医・繧ｯ繝ｳ
+TWILIO_PHONE_NUMBER: str        # Twilio逋ｺ菫｡蜈・崕隧ｱ逡ｪ蜿ｷ・・.164蠖｢蠑擾ｼ・
+GOOGLE_SHEETS_CREDENTIALS_JSON: str  # Google Sheets API隱崎ｨｼ諠・ｱ・・SON譁・ｭ怜・・・
+GOOGLE_SHEETS_SPREADSHEET_ID: str    # 繧ｹ繝励Ξ繝・ラ繧ｷ繝ｼ繝・D
+TZ: str = "Asia/Tokyo"          # 繧ｿ繧､繝繧ｾ繝ｼ繝ｳ
 ```
 
-### オプション環境変数
+### 繧ｪ繝励す繝ｧ繝ｳ迺ｰ蠅・､画焚
 
 ```python
 LOG_LEVEL: str = "INFO"
@@ -135,53 +135,53 @@ API_HOST: str = "0.0.0.0"
 API_PORT: int = 8000
 ```
 
-## 主要機能要件
+## 荳ｻ隕∵ｩ溯・隕∽ｻｶ
 
-### 1. 前日出発予定時間登録
+### 1. 蜑肴律蜃ｺ逋ｺ莠亥ｮ壽凾髢鍋匳骭ｲ
 
-- LINEで時→分の2タップで登録（5分単位のみ）
-- データ形式: 時（0-23）、分（0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55）
-- 日付は登録日の翌日（システムが自動判定）
-- Googleスプレッドシート「出発見守り_当日管理」に保存
+- LINE縺ｧ譎や・蛻・・2繧ｿ繝・・縺ｧ逋ｻ骭ｲ・・蛻・腰菴阪・縺ｿ・・
+- 繝・・繧ｿ蠖｢蠑・ 譎ゑｼ・-23・峨∝・・・, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55・・
+- 譌･莉倥・逋ｻ骭ｲ譌･縺ｮ鄙梧律・医す繧ｹ繝・Β縺瑚・蜍募愛螳夲ｼ・
+- Google繧ｹ繝励Ξ繝・ラ繧ｷ繝ｼ繝医悟・逋ｺ隕句ｮ医ｊ_蠖捺律邂｡逅・阪↓菫晏ｭ・
 
-### 2. 前日リマインド（スケジューラー）
+### 2. 蜑肴律繝ｪ繝槭う繝ｳ繝会ｼ医せ繧ｱ繧ｸ繝･繝ｼ繝ｩ繝ｼ・・
 
-| 時刻 | 処理 |
+| 譎ょ綾 | 蜃ｦ逅・|
 |------|------|
-| 20:00 JST | 未登録者にLINE通知 |
-| 21:00 JST | 未登録者にLINE通知 |
-| 22:00 JST | 未登録者にLINE通知 |
-| 22:30 JST | 管制へ未登録者通知（人数＋氏名） |
-| 23:00 JST | 未登録者に最終LINE通知 |
-| 24:00 JST | 通常出発予定時間を自動採用（無ければ管制通知） |
+| 20:00 JST | 譛ｪ逋ｻ骭ｲ閠・↓LINE騾夂衍 |
+| 21:00 JST | 譛ｪ逋ｻ骭ｲ閠・↓LINE騾夂衍 |
+| 22:00 JST | 譛ｪ逋ｻ骭ｲ閠・↓LINE騾夂衍 |
+| 22:30 JST | 邂｡蛻ｶ縺ｸ譛ｪ逋ｻ骭ｲ閠・夂衍・井ｺｺ謨ｰ・区ｰ丞錐・・|
+| 23:00 JST | 譛ｪ逋ｻ骭ｲ閠・↓譛邨・INE騾夂衍 |
+| 24:00 JST | 騾壼ｸｸ蜃ｺ逋ｺ莠亥ｮ壽凾髢薙ｒ閾ｪ蜍墓治逕ｨ・育┌縺代ｌ縺ｰ邂｡蛻ｶ騾夂衍・・|
 
-### 3. 当日出発報告
+### 3. 蠖捺律蜃ｺ逋ｺ蝣ｱ蜻・
 
-- LINEの「出発報告」ボタン（Postback）を押す
-- 重複押下は「既に出発報告済みです」と表示、処理スキップ
-- 判定ロジック:
-  - `出発時間 <= 出発予定時間` → "OK"（何もしない）
-  - `出発時間 > 出発予定時間` → "遅れ返"（ログのみ）
-  - `出発予定時間までに未報告` → "要確認"（自動電話へ）
+- LINE縺ｮ縲悟・逋ｺ蝣ｱ蜻翫阪・繧ｿ繝ｳ・・ostback・峨ｒ謚ｼ縺・
+- 驥崎､・款荳九・縲梧里縺ｫ蜃ｺ逋ｺ蝣ｱ蜻頑ｸ医∩縺ｧ縺吶阪→陦ｨ遉ｺ縲∝・逅・せ繧ｭ繝・・
+- 蛻､螳壹Ο繧ｸ繝・け:
+  - `蜃ｺ逋ｺ譎る俣 <= 蜃ｺ逋ｺ莠亥ｮ壽凾髢伝 竊・"OK"・井ｽ輔ｂ縺励↑縺・ｼ・
+  - `蜃ｺ逋ｺ譎る俣 > 蜃ｺ逋ｺ莠亥ｮ壽凾髢伝 竊・"驕・ｌ霑・・医Ο繧ｰ縺ｮ縺ｿ・・
+  - `蜃ｺ逋ｺ莠亥ｮ壽凾髢薙∪縺ｧ縺ｫ譛ｪ蝣ｱ蜻柿 竊・"隕∫｢ｺ隱・・郁・蜍暮崕隧ｱ縺ｸ・・
 
-**重要**: 時刻比較は秒単位（ミリ秒は切り捨て）
+**驥崎ｦ・*: 譎ょ綾豈碑ｼ・・遘貞腰菴搾ｼ医Α繝ｪ遘偵・蛻・ｊ謐ｨ縺ｦ・・
 
-### 4. 自動電話（出発予定時間の1分後から開始）
+### 4. 閾ｪ蜍暮崕隧ｱ・亥・逋ｺ莠亥ｮ壽凾髢薙・1蛻・ｾ後°繧蛾幕蟋具ｼ・
 
-- **電話①**: 5分おき × 5回（約25分）
-- **電話②**: 3分おき × 10回（約30分）
-- **合計**: 約45分
-- 音声メッセージ: 「おはようございます。出発見守り和子さんです。本日の出発報告をお願いします。LINEの出発報告ボタンを押してください。」
-- 電話中に出発報告があった場合、残りの電話は即座にキャンセル
-- **重要**: 電話の結果（着信・応答・留守電）は判定に使わない
+- **髮ｻ隧ｱ竭**: 5蛻・♀縺・ﾃ・5蝗橸ｼ育ｴ・5蛻・ｼ・
+- **髮ｻ隧ｱ竭｡**: 3蛻・♀縺・ﾃ・10蝗橸ｼ育ｴ・0蛻・ｼ・
+- **蜷郁ｨ・*: 邏・5蛻・
+- 髻ｳ螢ｰ繝｡繝・そ繝ｼ繧ｸ: 縲後♀縺ｯ繧医≧縺斐＊縺・∪縺吶ょ・逋ｺ隕句ｮ医ｊ蜥悟ｭ舌＆繧薙〒縺吶よ悽譌･縺ｮ蜃ｺ逋ｺ蝣ｱ蜻翫ｒ縺企｡倥＞縺励∪縺吶・INE縺ｮ蜃ｺ逋ｺ蝣ｱ蜻翫・繧ｿ繝ｳ繧呈款縺励※縺上□縺輔＞縲ゅ・
+- 髮ｻ隧ｱ荳ｭ縺ｫ蜃ｺ逋ｺ蝣ｱ蜻翫′縺ゅ▲縺溷ｴ蜷医∵ｮ九ｊ縺ｮ髮ｻ隧ｱ縺ｯ蜊ｳ蠎ｧ縺ｫ繧ｭ繝｣繝ｳ繧ｻ繝ｫ
+- **驥崎ｦ・*: 髮ｻ隧ｱ縺ｮ邨先棡・育捩菫｡繝ｻ蠢懃ｭ斐・逡吝ｮ磯崕・峨・蛻､螳壹↓菴ｿ繧上↑縺・
 
-### 5. 管制通知
+### 5. 邂｡蛻ｶ騾夂衍
 
-- **条件**: 電話①②完走後も出発報告なし
-- **タイミング**: 電話②の最後の電話が終了した時点
-- **内容**: 氏名、出発予定時間、現在時刻、電話①②の完了状況
+- **譚｡莉ｶ**: 髮ｻ隧ｱ竭竭｡螳瑚ｵｰ蠕後ｂ蜃ｺ逋ｺ蝣ｱ蜻翫↑縺・
+- **繧ｿ繧､繝溘Φ繧ｰ**: 髮ｻ隧ｱ竭｡縺ｮ譛蠕後・髮ｻ隧ｱ縺檎ｵゆｺ・＠縺滓凾轤ｹ
+- **蜀・ｮｹ**: 豌丞錐縲∝・逋ｺ莠亥ｮ壽凾髢薙∫樟蝨ｨ譎ょ綾縲・崕隧ｱ竭竭｡縺ｮ螳御ｺ・憾豕・
 
-## 判定ロジック（Python実装）
+## 蛻､螳壹Ο繧ｸ繝・け・・ython螳溯｣・ｼ・
 
 ```python
 from datetime import datetime
@@ -189,77 +189,77 @@ from typing import Optional
 
 def judge_departure(actual_time: Optional[datetime], scheduled_time: datetime, current_time: datetime) -> Optional[str]:
     """
-    出発判定ロジック
+    蜃ｺ逋ｺ蛻､螳壹Ο繧ｸ繝・け
     
     Args:
-        actual_time: 出発報告ボタン押下時刻（JST、Noneの場合は未報告）
-        scheduled_time: 出発予定時間（JST）
-        current_time: 現在時刻（JST）
+        actual_time: 蜃ｺ逋ｺ蝣ｱ蜻翫・繧ｿ繝ｳ謚ｼ荳区凾蛻ｻ・・ST縲¨one縺ｮ蝣ｴ蜷医・譛ｪ蝣ｱ蜻奇ｼ・
+        scheduled_time: 蜃ｺ逋ｺ莠亥ｮ壽凾髢難ｼ・ST・・
+        current_time: 迴ｾ蝨ｨ譎ょ綾・・ST・・
     
     Returns:
-        "OK" / "遅れ返" / "要確認" / None（まだ判定できない）
+        "OK" / "驕・ｌ霑・ / "隕∫｢ｺ隱・ / None・医∪縺蛻､螳壹〒縺阪↑縺・ｼ・
     """
     if actual_time is None:
-        # 出発報告が無い
+        # 蜃ｺ逋ｺ蝣ｱ蜻翫′辟｡縺・
         if current_time > scheduled_time:
-            return "要確認"
+            return "隕∫｢ｺ隱・
         else:
-            return None  # まだ判定できない
+            return None  # 縺ｾ縺蛻､螳壹〒縺阪↑縺・
     
-    # 時刻比較（秒単位、ミリ秒は切り捨て）
+    # 譎ょ綾豈碑ｼ・ｼ育ｧ貞腰菴阪√Α繝ｪ遘偵・蛻・ｊ謐ｨ縺ｦ・・
     actual_seconds = actual_time.replace(microsecond=0)
     scheduled_seconds = scheduled_time.replace(microsecond=0)
     
     if actual_seconds <= scheduled_seconds:
         return "OK"
     else:
-        return "遅れ返"
+        return "驕・ｌ霑・
 ```
 
-## Googleスプレッドシート構造
+## Google繧ｹ繝励Ξ繝・ラ繧ｷ繝ｼ繝域ｧ矩
 
-### シート①：キャスト一覧
+### 繧ｷ繝ｼ繝遺蔵・壹く繝｣繧ｹ繝井ｸ隕ｧ
 
-| 列名 | データ型 | 必須 | 形式・制約 |
+| 蛻怜錐 | 繝・・繧ｿ蝙・| 蠢・・| 蠖｢蠑上・蛻ｶ邏・|
 |------|----------|------|------------|
-| 氏名 | string | Yes | 最大100文字 |
-| LINE_ID | string | Yes | 最大100文字、英数字とアンダースコアのみ |
-| 電話番号 | string | Yes | E.164形式（+819012345678） |
-| 通常出発予定時間 | time | No | HH:MM形式、5分単位 |
-| 所属 | string | No | 最大100文字 |
-| 備考 | string | No | 最大500文字 |
+| 豌丞錐 | string | Yes | 譛螟ｧ100譁・ｭ・|
+| LINE_ID | string | Yes | 譛螟ｧ100譁・ｭ励∬恭謨ｰ蟄励→繧｢繝ｳ繝繝ｼ繧ｹ繧ｳ繧｢縺ｮ縺ｿ |
+| 髮ｻ隧ｱ逡ｪ蜿ｷ | string | Yes | E.164蠖｢蠑擾ｼ・819012345678・・|
+| 騾壼ｸｸ蜃ｺ逋ｺ莠亥ｮ壽凾髢・| time | No | HH:MM蠖｢蠑上・蛻・腰菴・|
+| 謇螻・| string | No | 譛螟ｧ100譁・ｭ・|
+| 蛯呵・| string | No | 譛螟ｧ500譁・ｭ・|
 
-**データ整合性**: `LINE_ID`と`電話番号`は一意
+**繝・・繧ｿ謨ｴ蜷域ｧ**: `LINE_ID`縺ｨ`髮ｻ隧ｱ逡ｪ蜿ｷ`縺ｯ荳諢・
 
-### シート②：出発見守り_当日管理
+### 繧ｷ繝ｼ繝遺贈・壼・逋ｺ隕句ｮ医ｊ_蠖捺律邂｡逅・
 
-| 列名 | データ型 | 必須 | 形式・制約 |
+| 蛻怜錐 | 繝・・繧ｿ蝙・| 蠢・・| 蠖｢蠑上・蛻ｶ邏・|
 |------|----------|------|------------|
-| 日付 | date | Yes | YYYY-MM-DD形式 |
-| 氏名 | string | Yes | 最大100文字 |
-| LINE_ID | string | Yes | 最大100文字 |
-| 出発予定時間 | datetime | No | YYYY-MM-DD HH:MM:SS形式（JST） |
-| 出発時間 | datetime | No | YYYY-MM-DD HH:MM:SS.SSS形式（JST） |
-| 出発判定 | enum | No | "OK" / "遅れ返" / "要確認" / "管制対応" |
-| 出発電話回数 | integer | No | 0 / 1 / 2 |
-| 最終結果 | enum | No | "出勤OK" / "遅刻" / "穴埋め" / "未確定" |
-| 管制メモ | string | No | 最大1000文字 |
+| 譌･莉・| date | Yes | YYYY-MM-DD蠖｢蠑・|
+| 豌丞錐 | string | Yes | 譛螟ｧ100譁・ｭ・|
+| LINE_ID | string | Yes | 譛螟ｧ100譁・ｭ・|
+| 蜃ｺ逋ｺ莠亥ｮ壽凾髢・| datetime | No | YYYY-MM-DD HH:MM:SS蠖｢蠑擾ｼ・ST・・|
+| 蜃ｺ逋ｺ譎る俣 | datetime | No | YYYY-MM-DD HH:MM:SS.SSS蠖｢蠑擾ｼ・ST・・|
+| 蜃ｺ逋ｺ蛻､螳・| enum | No | "OK" / "驕・ｌ霑・ / "隕∫｢ｺ隱・ / "邂｡蛻ｶ蟇ｾ蠢・ |
+| 蜃ｺ逋ｺ髮ｻ隧ｱ蝗樊焚 | integer | No | 0 / 1 / 2 |
+| 譛邨らｵ先棡 | enum | No | "蜃ｺ蜍､OK" / "驕・綾" / "遨ｴ蝓九ａ" / "譛ｪ遒ｺ螳・ |
+| 邂｡蛻ｶ繝｡繝｢ | string | No | 譛螟ｧ1000譁・ｭ・|
 
-**データ整合性**: `日付` + `LINE_ID`の組み合わせは一意（1日1人1レコード）
+**繝・・繧ｿ謨ｴ蜷域ｧ**: `譌･莉倭 + `LINE_ID`縺ｮ邨・∩蜷医ｏ縺帙・荳諢擾ｼ・譌･1莠ｺ1繝ｬ繧ｳ繝ｼ繝会ｼ・
 
-## APIエンドポイント
+## API繧ｨ繝ｳ繝峨・繧､繝ｳ繝・
 
 ### POST /webhook/line
 
-LINE Messaging APIのWebhookを受信
+LINE Messaging API縺ｮWebhook繧貞女菫｡
 
-- Postbackイベント（出発報告ボタン）を処理
-- メッセージイベント（出発予定時間登録）を処理
-- LINE Messaging APIの署名検証を実装（必須）
+- Postback繧､繝吶Φ繝茨ｼ亥・逋ｺ蝣ｱ蜻翫・繧ｿ繝ｳ・峨ｒ蜃ｦ逅・
+- 繝｡繝・そ繝ｼ繧ｸ繧､繝吶Φ繝茨ｼ亥・逋ｺ莠亥ｮ壽凾髢鍋匳骭ｲ・峨ｒ蜃ｦ逅・
+- LINE Messaging API縺ｮ鄂ｲ蜷肴､懆ｨｼ繧貞ｮ溯｣・ｼ亥ｿ・茨ｼ・
 
 ### GET /health
 
-健康チェック
+蛛･蠎ｷ繝√ぉ繝・け
 
 ```json
 {
@@ -268,84 +268,85 @@ LINE Messaging APIのWebhookを受信
 }
 ```
 
-## エラーハンドリング
+## 繧ｨ繝ｩ繝ｼ繝上Φ繝峨Μ繝ｳ繧ｰ
 
 ### LINE API
 
-- 400系: ログ記録、ユーザーにエラーメッセージ送信、リトライなし
-- 401/403: ログ記録、アラート通知、リトライなし
-- 429/500: ログ記録、指数バックオフでリトライ（最大3回: 1s, 2s, 4s）
-- タイムアウト: ログ記録、リトライ（最大3回）
+- 400邉ｻ: 繝ｭ繧ｰ險倬鹸縲√Θ繝ｼ繧ｶ繝ｼ縺ｫ繧ｨ繝ｩ繝ｼ繝｡繝・そ繝ｼ繧ｸ騾∽ｿ｡縲√Μ繝医Λ繧､縺ｪ縺・
+- 401/403: 繝ｭ繧ｰ險倬鹸縲√い繝ｩ繝ｼ繝磯夂衍縲√Μ繝医Λ繧､縺ｪ縺・
+- 429/500: 繝ｭ繧ｰ險倬鹸縲∵欠謨ｰ繝舌ャ繧ｯ繧ｪ繝輔〒繝ｪ繝医Λ繧､・域怙螟ｧ3蝗・ 1s, 2s, 4s・・
+- 繧ｿ繧､繝繧｢繧ｦ繝・ 繝ｭ繧ｰ險倬鹸縲√Μ繝医Λ繧､・域怙螟ｧ3蝗橸ｼ・
 
 ### Twilio API
 
-- 20003/21211/21608: ログ記録、スプレッドシートにエラーフラグ、リトライなし
-- 20001: ログ記録、アラート通知、リトライなし
-- 20429/500: ログ記録、指数バックオフでリトライ（最大3回: 1s, 2s, 4s）
-- タイムアウト: ログ記録、リトライ（最大3回）
-- 電話発信失敗時: ログ記録、スプレッドシートの`管制メモ`に「電話発信失敗」と記録、次の電話は通常通り実行
+- 20003/21211/21608: 繝ｭ繧ｰ險倬鹸縲√せ繝励Ξ繝・ラ繧ｷ繝ｼ繝医↓繧ｨ繝ｩ繝ｼ繝輔Λ繧ｰ縲√Μ繝医Λ繧､縺ｪ縺・
+- 20001: 繝ｭ繧ｰ險倬鹸縲√い繝ｩ繝ｼ繝磯夂衍縲√Μ繝医Λ繧､縺ｪ縺・
+- 20429/500: 繝ｭ繧ｰ險倬鹸縲∵欠謨ｰ繝舌ャ繧ｯ繧ｪ繝輔〒繝ｪ繝医Λ繧､・域怙螟ｧ3蝗・ 1s, 2s, 4s・・
+- 繧ｿ繧､繝繧｢繧ｦ繝・ 繝ｭ繧ｰ險倬鹸縲√Μ繝医Λ繧､・域怙螟ｧ3蝗橸ｼ・
+- 髮ｻ隧ｱ逋ｺ菫｡螟ｱ謨玲凾: 繝ｭ繧ｰ險倬鹸縲√せ繝励Ξ繝・ラ繧ｷ繝ｼ繝医・`邂｡蛻ｶ繝｡繝｢`縺ｫ縲碁崕隧ｱ逋ｺ菫｡螟ｱ謨励阪→險倬鹸縲∵ｬ｡縺ｮ髮ｻ隧ｱ縺ｯ騾壼ｸｸ騾壹ｊ螳溯｡・
 
 ### Google Sheets API
 
-- 400/401/403: ログ記録、アラート通知、リトライなし
-- 429/500/503: ログ記録、指数バックオフでリトライ（最大5回: 1s, 2s, 4s, 8s, 16s）
-- タイムアウト: ログ記録、リトライ（最大5回）
-- 書き込み失敗時: ログ記録、リトライ（最大5回）、5回失敗した場合はメモリ上に保持して後で再試行（キューに保存）、アラート通知
+- 400/401/403: 繝ｭ繧ｰ險倬鹸縲√い繝ｩ繝ｼ繝磯夂衍縲√Μ繝医Λ繧､縺ｪ縺・
+- 429/500/503: 繝ｭ繧ｰ險倬鹸縲∵欠謨ｰ繝舌ャ繧ｯ繧ｪ繝輔〒繝ｪ繝医Λ繧､・域怙螟ｧ5蝗・ 1s, 2s, 4s, 8s, 16s・・
+- 繧ｿ繧､繝繧｢繧ｦ繝・ 繝ｭ繧ｰ險倬鹸縲√Μ繝医Λ繧､・域怙螟ｧ5蝗橸ｼ・
+- 譖ｸ縺崎ｾｼ縺ｿ螟ｱ謨玲凾: 繝ｭ繧ｰ險倬鹸縲√Μ繝医Λ繧､・域怙螟ｧ5蝗橸ｼ峨・蝗槫､ｱ謨励＠縺溷ｴ蜷医・繝｡繝｢繝ｪ荳翫↓菫晄戟縺励※蠕後〒蜀崎ｩｦ陦鯉ｼ医く繝･繝ｼ縺ｫ菫晏ｭ假ｼ峨√い繝ｩ繝ｼ繝磯夂衍
 
-### 共通
+### 蜈ｱ騾・
 
-- すべてのAPI呼び出しでタイムアウトを設定（30秒）
-- データ整合性エラー: スプレッドシートから取得したデータのバリデーション、不正なデータはログ記録し、デフォルト値を使用
+- 縺吶∋縺ｦ縺ｮAPI蜻ｼ縺ｳ蜃ｺ縺励〒繧ｿ繧､繝繧｢繧ｦ繝医ｒ險ｭ螳夲ｼ・0遘抵ｼ・
+- 繝・・繧ｿ謨ｴ蜷域ｧ繧ｨ繝ｩ繝ｼ: 繧ｹ繝励Ξ繝・ラ繧ｷ繝ｼ繝医°繧牙叙蠕励＠縺溘ョ繝ｼ繧ｿ縺ｮ繝舌Μ繝・・繧ｷ繝ｧ繝ｳ縲∽ｸ肴ｭ｣縺ｪ繝・・繧ｿ縺ｯ繝ｭ繧ｰ險倬鹸縺励√ョ繝輔か繝ｫ繝亥､繧剃ｽｿ逕ｨ
 
-## ログ設定
+## 繝ｭ繧ｰ險ｭ螳・
 
-- ログレベル: DEBUG, INFO, WARNING, ERROR, CRITICAL
-- ログ出力先: ファイル（`./logs/app.log`、日次ローテーション）、コンソール（開発環境のみ）
-- ログ形式: `[YYYY-MM-DD HH:mm:ss.SSS] [LEVEL] [MODULE] MESSAGE`
-- 個人情報保護: ログには個人情報を含めない（LINE_IDはハッシュ化）
+- 繝ｭ繧ｰ繝ｬ繝吶Ν: DEBUG, INFO, WARNING, ERROR, CRITICAL
+- 繝ｭ繧ｰ蜃ｺ蜉帛・: 繝輔ぃ繧､繝ｫ・・./logs/app.log`縲∵律谺｡繝ｭ繝ｼ繝・・繧ｷ繝ｧ繝ｳ・峨√さ繝ｳ繧ｽ繝ｼ繝ｫ・磯幕逋ｺ迺ｰ蠅・・縺ｿ・・
+- 繝ｭ繧ｰ蠖｢蠑・ `[YYYY-MM-DD HH:mm:ss.SSS] [LEVEL] [MODULE] MESSAGE`
+- 蛟倶ｺｺ諠・ｱ菫晁ｭｷ: 繝ｭ繧ｰ縺ｫ縺ｯ蛟倶ｺｺ諠・ｱ繧貞性繧√↑縺・ｼ・INE_ID縺ｯ繝上ャ繧ｷ繝･蛹厄ｼ・
 
-## 実装時の注意点
+## 螳溯｣・凾縺ｮ豕ｨ諢冗せ
 
-1. **タイムゾーン**: すべてJST（Asia/Tokyo）で処理
-2. **日付境界**: 23:59:59 → 00:00:00は翌日として扱う
-3. **重複防止**: 出発報告ボタンの重複押下をチェック
-4. **電話キャンセル**: 電話中に出発報告があった場合、残りの電話を即座にキャンセル
-5. **スケジューラー**: サーバー起動時に自動開始、過去のスケジュールは実行しない
-6. **データバリデーション**: すべての入力データをバリデーション（正規表現、型チェック、範囲チェック）
-7. **エラーログ**: すべてのエラーをログに記録
-8. **環境変数**: 起動時に必須環境変数の存在をチェック
+1. **繧ｿ繧､繝繧ｾ繝ｼ繝ｳ**: 縺吶∋縺ｦJST・・sia/Tokyo・峨〒蜃ｦ逅・
+2. **譌･莉伜｢・阜**: 23:59:59 竊・00:00:00縺ｯ鄙梧律縺ｨ縺励※謇ｱ縺・
+3. **驥崎､・亟豁｢**: 蜃ｺ逋ｺ蝣ｱ蜻翫・繧ｿ繝ｳ縺ｮ驥崎､・款荳九ｒ繝√ぉ繝・け
+4. **髮ｻ隧ｱ繧ｭ繝｣繝ｳ繧ｻ繝ｫ**: 髮ｻ隧ｱ荳ｭ縺ｫ蜃ｺ逋ｺ蝣ｱ蜻翫′縺ゅ▲縺溷ｴ蜷医∵ｮ九ｊ縺ｮ髮ｻ隧ｱ繧貞叉蠎ｧ縺ｫ繧ｭ繝｣繝ｳ繧ｻ繝ｫ
+5. **繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｩ繝ｼ**: 繧ｵ繝ｼ繝舌・襍ｷ蜍墓凾縺ｫ閾ｪ蜍暮幕蟋九・℃蜴ｻ縺ｮ繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｫ縺ｯ螳溯｡後＠縺ｪ縺・
+6. **繝・・繧ｿ繝舌Μ繝・・繧ｷ繝ｧ繝ｳ**: 縺吶∋縺ｦ縺ｮ蜈･蜉帙ョ繝ｼ繧ｿ繧偵ヰ繝ｪ繝・・繧ｷ繝ｧ繝ｳ・域ｭ｣隕剰｡ｨ迴ｾ縲∝梛繝√ぉ繝・け縲∫ｯ・峇繝√ぉ繝・け・・
+7. **繧ｨ繝ｩ繝ｼ繝ｭ繧ｰ**: 縺吶∋縺ｦ縺ｮ繧ｨ繝ｩ繝ｼ繧偵Ο繧ｰ縺ｫ險倬鹸
+8. **迺ｰ蠅・､画焚**: 襍ｷ蜍墓凾縺ｫ蠢・育腸蠅・､画焚縺ｮ蟄伜惠繧偵メ繧ｧ繝・け
 
-## 正規表現パターン
+## 豁｣隕剰｡ｨ迴ｾ繝代ち繝ｼ繝ｳ
 
 ```python
-PHONE_NUMBER_PATTERN = r'^\+[1-9]\d{1,14}$'  # 電話番号（E.164形式）
-TIME_PATTERN = r'^([0-1]?[0-9]|2[0-3]):([0-5][05])$'  # 時刻（HH:MM、5分単位）
-DATE_PATTERN = r'^\d{4}-\d{2}-\d{2}$'  # 日付（YYYY-MM-DD）
-LINE_ID_PATTERN = r'^[a-zA-Z0-9_]+$'  # LINE_ID（英数字とアンダースコア）
+PHONE_NUMBER_PATTERN = r'^\+[1-9]\d{1,14}$'  # 髮ｻ隧ｱ逡ｪ蜿ｷ・・.164蠖｢蠑擾ｼ・
+TIME_PATTERN = r'^([0-1]?[0-9]|2[0-3]):([0-5][05])$'  # 譎ょ綾・・H:MM縲・蛻・腰菴搾ｼ・
+DATE_PATTERN = r'^\d{4}-\d{2}-\d{2}$'  # 譌･莉假ｼ・YYY-MM-DD・・
+LINE_ID_PATTERN = r'^[a-zA-Z0-9_]+$'  # LINE_ID・郁恭謨ｰ蟄励→繧｢繝ｳ繝繝ｼ繧ｹ繧ｳ繧｢・・
 ```
 
-## 実装の優先順位
+## 螳溯｣・・蜆ｪ蜈磯・ｽ・
 
-1. データモデル（Pydantic）の実装
-2. 設定管理（config.py）の実装
-3. ログ設定（utils/logger.py）の実装
-4. Google Sheets Serviceの実装
-5. LINE Serviceの実装
-6. Twilio Serviceの実装
-7. Departure Service（判定ロジック）の実装
-8. Webhook Handlerの実装
-9. スケジューラーの実装
-10. FastAPIアプリケーション（main.py）の実装
-11. エラーハンドリングの実装
-12. テストの実装
+1. 繝・・繧ｿ繝｢繝・Ν・・ydantic・峨・螳溯｣・
+2. 險ｭ螳夂ｮ｡逅・ｼ・onfig.py・峨・螳溯｣・
+3. 繝ｭ繧ｰ險ｭ螳夲ｼ・tils/logger.py・峨・螳溯｣・
+4. Google Sheets Service縺ｮ螳溯｣・
+5. LINE Service縺ｮ螳溯｣・
+6. Twilio Service縺ｮ螳溯｣・
+7. Departure Service・亥愛螳壹Ο繧ｸ繝・け・峨・螳溯｣・
+8. Webhook Handler縺ｮ螳溯｣・
+9. 繧ｹ繧ｱ繧ｸ繝･繝ｼ繝ｩ繝ｼ縺ｮ螳溯｣・
+10. FastAPI繧｢繝励Μ繧ｱ繝ｼ繧ｷ繝ｧ繝ｳ・・ain.py・峨・螳溯｣・
+11. 繧ｨ繝ｩ繝ｼ繝上Φ繝峨Μ繝ｳ繧ｰ縺ｮ螳溯｣・
+12. 繝・せ繝医・螳溯｣・
 
-## テスト要件
+## 繝・せ繝郁ｦ∽ｻｶ
 
-- 単体テスト: 判定ロジック、データバリデーション、エラーハンドリング
-- 統合テスト: LINE API連携（モック）、Twilio API連携（モック）、Google Sheets API連携（テスト用スプレッドシート）
-- エンドツーエンドテスト: 前日登録から当日出発報告までのフロー
+- 蜊倅ｽ薙ユ繧ｹ繝・ 蛻､螳壹Ο繧ｸ繝・け縲√ョ繝ｼ繧ｿ繝舌Μ繝・・繧ｷ繝ｧ繝ｳ縲√お繝ｩ繝ｼ繝上Φ繝峨Μ繝ｳ繧ｰ
+- 邨ｱ蜷医ユ繧ｹ繝・ LINE API騾｣謳ｺ・医Δ繝・け・峨ゝwilio API騾｣謳ｺ・医Δ繝・け・峨；oogle Sheets API騾｣謳ｺ・医ユ繧ｹ繝育畑繧ｹ繝励Ξ繝・ラ繧ｷ繝ｼ繝茨ｼ・
+- 繧ｨ繝ｳ繝峨ヤ繝ｼ繧ｨ繝ｳ繝峨ユ繧ｹ繝・ 蜑肴律逋ｻ骭ｲ縺九ｉ蠖捺律蜃ｺ逋ｺ蝣ｱ蜻翫∪縺ｧ縺ｮ繝輔Ο繝ｼ
 
 ---
 
-**重要**: この仕様に従って実装してください。不明な点があれば、仕様書（SPECIFICATION.md）とアーキテクチャ設計書（ARCHITECTURE.md）を参照してください。
+**驥崎ｦ・*: 縺薙・莉墓ｧ倥↓蠕薙▲縺ｦ螳溯｣・＠縺ｦ縺上□縺輔＞縲ゆｸ肴・縺ｪ轤ｹ縺後≠繧後・縲∽ｻ墓ｧ俶嶌・・PECIFICATION.md・峨→繧｢繝ｼ繧ｭ繝・け繝√Ε險ｭ險域嶌・・RCHITECTURE.md・峨ｒ蜿ら・縺励※縺上□縺輔＞縲・
+
 

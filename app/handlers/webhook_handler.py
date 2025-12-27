@@ -86,18 +86,24 @@ async def line_webhook(request: Request):
                 continue
             text = message.get("text", "").strip()
             if not validate_time_string(text):
+<<<<<<< HEAD
                 line_id = event.get("source", {}).get("userId")
                 if line_id:
                     await line_service.send_message(line_id, "時間はHH:MM（5分単位）で入力してください。")
+=======
+>>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
                 continue
             line_id = event.get("source", {}).get("userId")
             if not line_id:
                 continue
             next_day = (datetime.now(tz) + timedelta(days=1)).date()
             time_value = parse_time_string(text)
+<<<<<<< HEAD
             if time_value is None:
                 await line_service.send_message(line_id, "時間はHH:MM（5分単位）で入力してください。")
                 continue
+=======
+>>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
             scheduled = datetime.combine(next_day, time_value, tzinfo=tz)
 
             cast_name = None

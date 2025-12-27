@@ -3,8 +3,12 @@ from typing import Dict, List
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+<<<<<<< HEAD
 from app.models import DepartureRecord, DepartureStatus
 from app.services.notification_service import NotificationService
+=======
+from app.models import DepartureRecord
+>>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
 from app.services.spreadsheet_service import SpreadsheetService
 from app.services.twilio_service import TwilioService
 from app.utils.logger import get_logger
@@ -17,6 +21,7 @@ CALL_MESSAGE = (
 
 
 class PhoneService:
+<<<<<<< HEAD
     def __init__(
         self,
         scheduler: AsyncIOScheduler,
@@ -28,6 +33,12 @@ class PhoneService:
         self._twilio = twilio
         self._sheet = sheet
         self._notification = notification
+=======
+    def __init__(self, scheduler: AsyncIOScheduler, twilio: TwilioService, sheet: SpreadsheetService) -> None:
+        self._scheduler = scheduler
+        self._twilio = twilio
+        self._sheet = sheet
+>>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
         self._logger = get_logger("phone_service")
         self._jobs_by_line: Dict[str, List[str]] = {}
 

@@ -4,10 +4,16 @@ from typing import List, Optional, Tuple
 
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
+<<<<<<< HEAD
 from zoneinfo import ZoneInfo
 
 from app.config import Settings
 from app.models import Cast, DepartureRecord, DepartureStatus, FinalResult
+=======
+
+from app.config import Settings
+from app.models import Cast, DepartureRecord, DepartureStatus
+>>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
 from app.utils.logger import get_logger
 
 
@@ -19,7 +25,10 @@ class SpreadsheetService:
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
         self._logger = get_logger("spreadsheet_service")
+<<<<<<< HEAD
         self._tz = ZoneInfo(settings.tz)
+=======
+>>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
         creds_info = json.loads(settings.google_sheets_credentials_json)
         creds = Credentials.from_service_account_info(creds_info, scopes=["https://www.googleapis.com/auth/spreadsheets"])
         self._service = build("sheets", "v4", credentials=creds, cache_discovery=False)
@@ -150,7 +159,11 @@ class SpreadsheetService:
                 if cast.default_departure_time is None:
                     missing.append(cast.name)
                     continue
+<<<<<<< HEAD
                 scheduled = datetime.combine(target_date, cast.default_departure_time, tzinfo=self._tz)
+=======
+                scheduled = datetime.combine(target_date, cast.default_departure_time)
+>>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
                 record = DepartureRecord(
                     date=target_date,
                     name=cast.name,
@@ -164,7 +177,11 @@ class SpreadsheetService:
                 if cast.default_departure_time is None:
                     missing.append(cast.name)
                     continue
+<<<<<<< HEAD
                 record.scheduled_departure_time = datetime.combine(target_date, cast.default_departure_time, tzinfo=self._tz)
+=======
+                record.scheduled_departure_time = datetime.combine(target_date, cast.default_departure_time)
+>>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
                 self.upsert_departure_record(record)
         return missing
 
@@ -172,12 +189,20 @@ class SpreadsheetService:
         try:
             scheduled = None
             if data.get("出発予定時間"):
+<<<<<<< HEAD
                 scheduled = self._ensure_timezone(datetime.fromisoformat(data["出発予定時間"]))
             actual = None
             if data.get("出発時間"):
                 actual = self._ensure_timezone(datetime.fromisoformat(data["出発時間"]))
             status = data.get("出発判定") or None
             final = data.get("最終結果") or None
+=======
+                scheduled = datetime.fromisoformat(data["出発予定時間"])
+            actual = None
+            if data.get("出発時間"):
+                actual = datetime.fromisoformat(data["出発時間"])
+            status = data.get("出発判定") or None
+>>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
             record = DepartureRecord(
                 date=date.fromisoformat(data.get("日付")),
                 name=data.get("氏名", ""),
@@ -186,7 +211,11 @@ class SpreadsheetService:
                 actual_departure_time=actual,
                 departure_status=DepartureStatus(status) if status else None,
                 phone_call_count=int(data.get("出発電話回数", 0) or 0),
+<<<<<<< HEAD
                 final_result=FinalResult(final) if final else None,
+=======
+                final_result=None,
+>>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
                 control_notes=data.get("管制メモ"),
             )
             return record
@@ -206,8 +235,11 @@ class SpreadsheetService:
             record.final_result.value if record.final_result else "",
             record.control_notes or "",
         ]
+<<<<<<< HEAD
 
     def _ensure_timezone(self, value: datetime) -> datetime:
         if value.tzinfo is None:
             return value.replace(tzinfo=self._tz)
         return value.astimezone(self._tz)
+=======
+>>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
