@@ -61,6 +61,17 @@ class PhoneService:
                 replace_existing=True,
             )
             job_ids.append(job_id)
+
+        final_job_id = f"final_check_{record.line_id}"
+        self._scheduler.add_job(
+            self._final_check_job,
+            "date",
+            run_date=times[-1] + timedelta(seconds=30),
+            args=[record.date, record.line_id],
+            id=final_job_id,
+            replace_existing=True,
+        )
+        job_ids.append(final_job_id)
         self._jobs_by_line[record.line_id] = job_ids
 
     def cancel_phone_calls(self, line_id: str) -> None:
@@ -81,6 +92,8 @@ class PhoneService:
             return
         if index == 0 and record.phone_call_count < 1:
             record.phone_call_count = 1
+            if record.departure_status != DepartureStatus.NEED_CHECK:
+                record.departure_status = DepartureStatus.NEED_CHECK
             self._sheet.upsert_departure_record(record)
         if index == 5 and record.phone_call_count < 2:
             record.phone_call_count = 2
@@ -97,3 +110,25 @@ class PhoneService:
         if not call_sid:
             record.control_notes = "電話発信失敗"
             self._sheet.upsert_departure_record(record)
+
+    async def _final_check_job(self, record_date, line_id: str) -> None:
+        found = self._sheet.get_departure_record(record_date, line_id)
+        if not found:
+            return
+        _, record = found
+        if record.actual_departure_time:
+            self.cancel_phone_calls(line_id)
+            return
+        record.departure_status = DepartureStatus.CONTROL
+        self._sheet.upsert_departure_record(record)
+
+        now = datetime.now(record.scheduled_departure_time.tzinfo) if record.scheduled_departure_time else datetime.now()
+        scheduled_time = record.scheduled_departure_time.strftime("%H:%M") if record.scheduled_departure_time else ""
+        await self._notification.send_emergency_alert(
+            name=record.name,
+            line_id=record.line_id,
+            scheduled_time=scheduled_time,
+            now=now.strftime("%Y-%m-%d %H:%M"),
+            phase1_done=True,
+            phase2_done=True,
+        )

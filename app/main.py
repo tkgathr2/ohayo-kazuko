@@ -22,8 +22,8 @@ def create_app() -> FastAPI:
     sheet_service = SpreadsheetService(settings)
     line_service = LineService(settings)
     twilio_service = TwilioService(settings)
-    phone_service = PhoneService(scheduler, twilio_service, sheet_service)
     notification_service = NotificationService(settings, line_service, sheet_service)
+    phone_service = PhoneService(scheduler, twilio_service, sheet_service, notification_service)
 
     app.state.scheduler = scheduler
     app.state.sheet_service = sheet_service
