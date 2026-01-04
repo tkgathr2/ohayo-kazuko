@@ -7,6 +7,10 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+# .envファイルを読み込む
+from dotenv import load_dotenv
+load_dotenv(project_root / ".env")
+
 
 def check_env_vars() -> bool:
     """必須環境変数の確認"""
