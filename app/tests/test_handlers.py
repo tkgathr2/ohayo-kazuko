@@ -1,8 +1,9 @@
-﻿from datetime import datetime, date
+from datetime import datetime, date, time
 from zoneinfo import ZoneInfo
 
+import httpx
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
+from starlette.testclient import TestClient
 
 from app.handlers.webhook_handler import router
 from app.models import DepartureRecord
@@ -28,8 +29,16 @@ class FakeSheetService:
     def get_casts(self):
         return [type("Cast", (), c) for c in self.casts]
 
+    def get_cast_by_line_id(self, line_id: str):
+        for c in self.casts:
+            if c["line_id"] == line_id:
+                return type("Cast", (), c)
+        return None
+
     def get_departure_record(self, target_date: date, line_id: str):
-        key = (target_date, line_id)
+        # Convert date to string for lookup
+        date_str = target_date.strftime("%Y-%m-%d") if isinstance(target_date, date) else target_date
+        key = (date_str, line_id)
         if key in self.records:
             return 2, self.records[key]
         return None
@@ -38,15 +47,20 @@ class FakeSheetService:
         self.records[(record.date, record.line_id)] = record
 
     def get_departure_records(self, target_date: date):
-        return [r for (d, _), r in self.records.items() if d == target_date]
+        date_str = target_date.strftime("%Y-%m-%d") if isinstance(target_date, date) else target_date
+        return [r for (d, _), r in self.records.items() if d == date_str]
 
 
 class FakePhoneService:
     def __init__(self):
-        self.canceled = []
+        self.canceled_departure = []
+        self.canceled_wakeup = []
 
-    def cancel_phone_calls(self, line_id: str) -> None:
-        self.canceled.append(line_id)
+    def cancel_departure_calls(self, line_id: str) -> None:
+        self.canceled_departure.append(line_id)
+
+    def cancel_wakeup_calls(self, line_id: str) -> None:
+        self.canceled_wakeup.append(line_id)
 
 
 def build_app():
@@ -79,11 +93,12 @@ def test_register_time_message():
 def test_departure_report_postback():
     app = build_app()
     tz = ZoneInfo("Asia/Tokyo")
+    now = datetime.now(tz)
     record = DepartureRecord(
-        date=datetime.now(tz).date(),
+        date=now.strftime("%Y-%m-%d"),
         name="Test",
         line_id="U1",
-        scheduled_departure_time=datetime.now(tz),
+        scheduled_departure_time=time(now.hour, now.minute),
     )
     app.state.sheet_service.upsert_departure_record(record)
 

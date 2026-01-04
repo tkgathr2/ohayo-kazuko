@@ -59,8 +59,8 @@ class LineService:
             return await retry_async(
                 send,
                 retryable_exceptions=[httpx.HTTPStatusError, httpx.TimeoutException],
-                retries=3,
-                backoff=1.0,
+                retries=5,
+                initial_backoff=1.0,
             )
         except Exception as exc:
             self._logger.error("LINE send failed: %s", exc)

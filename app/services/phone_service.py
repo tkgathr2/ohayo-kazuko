@@ -1,27 +1,25 @@
-﻿from datetime import datetime, timedelta
-from typing import Dict, List
+"""電話サービス（起床電話対応）"""
+from datetime import date, datetime, time, timedelta
+from typing import Dict, List, Optional
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from zoneinfo import ZoneInfo
 
-<<<<<<< HEAD
-from app.models import DepartureRecord, DepartureStatus
+from app.models import DepartureRecord, DepartureStatus, FinalResult, WakeupStatus
 from app.services.notification_service import NotificationService
-=======
-from app.models import DepartureRecord
->>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
 from app.services.spreadsheet_service import SpreadsheetService
 from app.services.twilio_service import TwilioService
 from app.utils.logger import get_logger
 
 
-CALL_MESSAGE = (
-    "おはようございます。出発見守り和子さんです。"
-    "本日の出発報告をお願いします。LINEの出発報告ボタンを押してください。"
-)
+# 電話メッセージ
+DEPARTURE_CALL_MESSAGE = "おはよう和子さんです。出発報告をお願いします。"
+WAKEUP_CALL_MESSAGE = "おはよう和子さんです。起床報告をお願いします。"
 
 
 class PhoneService:
-<<<<<<< HEAD
+    """電話サービス"""
+
     def __init__(
         self,
         scheduler: AsyncIOScheduler,
@@ -33,102 +31,281 @@ class PhoneService:
         self._twilio = twilio
         self._sheet = sheet
         self._notification = notification
-=======
-    def __init__(self, scheduler: AsyncIOScheduler, twilio: TwilioService, sheet: SpreadsheetService) -> None:
-        self._scheduler = scheduler
-        self._twilio = twilio
-        self._sheet = sheet
->>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
         self._logger = get_logger("phone_service")
-        self._jobs_by_line: Dict[str, List[str]] = {}
+        # 出発電話のジョブID
+        self._departure_jobs_by_line: Dict[str, List[str]] = {}
+        # 起床電話のジョブID
+        self._wakeup_jobs_by_line: Dict[str, List[str]] = {}
 
-    def schedule_calls_for_record(self, record: DepartureRecord) -> None:
+    def schedule_departure_calls(self, record: DepartureRecord, tz: ZoneInfo) -> None:
+        """
+        出発電話をスケジュール
+
+        - 電話①: 出発予定時間から5分経過後
+        - 電話②: 電話①から10分経過後
+        """
         if not record.scheduled_departure_time:
             return
-        start = record.scheduled_departure_time + timedelta(minutes=1)
-        times = [start + timedelta(minutes=5 * i) for i in range(5)]
-        times += [times[-1] + timedelta(minutes=3 * i) for i in range(1, 11)]
+
+        target_date = date.fromisoformat(record.date)
+        scheduled_dt = datetime.combine(target_date, record.scheduled_departure_time, tzinfo=tz)
+
+        # 電話①: 5分後
+        call1_time = scheduled_dt + timedelta(minutes=5)
+        # 電話②: 電話①から10分後（=予定時間から15分後）
+        call2_time = scheduled_dt + timedelta(minutes=15)
 
         job_ids = []
-        for idx, call_time in enumerate(times):
-            job_id = f"call_{record.line_id}_{idx}"
-            self._scheduler.add_job(
-                self._make_call_job,
-                "date",
-                run_date=call_time,
-                args=[record.date, record.line_id, idx],
-                id=job_id,
-                replace_existing=True,
-            )
-            job_ids.append(job_id)
 
-        final_job_id = f"final_check_{record.line_id}"
+        # 電話①
+        job_id1 = f"departure_call1_{record.line_id}"
         self._scheduler.add_job(
-            self._final_check_job,
+            self._make_departure_call,
             "date",
-            run_date=times[-1] + timedelta(seconds=30),
-            args=[record.date, record.line_id],
+            run_date=call1_time,
+            args=[target_date, record.line_id, 1, tz],
+            id=job_id1,
+            replace_existing=True,
+        )
+        job_ids.append(job_id1)
+
+        # 電話②
+        job_id2 = f"departure_call2_{record.line_id}"
+        self._scheduler.add_job(
+            self._make_departure_call,
+            "date",
+            run_date=call2_time,
+            args=[target_date, record.line_id, 2, tz],
+            id=job_id2,
+            replace_existing=True,
+        )
+        job_ids.append(job_id2)
+
+        # 最終確認（電話②から30秒後）
+        final_job_id = f"departure_final_{record.line_id}"
+        self._scheduler.add_job(
+            self._departure_final_check,
+            "date",
+            run_date=call2_time + timedelta(seconds=30),
+            args=[target_date, record.line_id, tz],
             id=final_job_id,
             replace_existing=True,
         )
         job_ids.append(final_job_id)
-        self._jobs_by_line[record.line_id] = job_ids
 
-    def cancel_phone_calls(self, line_id: str) -> None:
-        for job_id in self._jobs_by_line.get(line_id, []):
+        self._departure_jobs_by_line[record.line_id] = job_ids
+
+    def schedule_wakeup_calls(self, record: DepartureRecord, tz: ZoneInfo) -> None:
+        """
+        起床電話をスケジュール
+
+        - 電話①: 起床予定時間から5分経過後
+        - 電話②: 電話①から10分経過後
+        """
+        if not record.scheduled_wakeup_time:
+            return
+
+        target_date = date.fromisoformat(record.date)
+        scheduled_dt = datetime.combine(target_date, record.scheduled_wakeup_time, tzinfo=tz)
+
+        # 電話①: 5分後
+        call1_time = scheduled_dt + timedelta(minutes=5)
+        # 電話②: 電話①から10分後（=予定時間から15分後）
+        call2_time = scheduled_dt + timedelta(minutes=15)
+
+        job_ids = []
+
+        # 電話①
+        job_id1 = f"wakeup_call1_{record.line_id}"
+        self._scheduler.add_job(
+            self._make_wakeup_call,
+            "date",
+            run_date=call1_time,
+            args=[target_date, record.line_id, 1, tz],
+            id=job_id1,
+            replace_existing=True,
+        )
+        job_ids.append(job_id1)
+
+        # 電話②
+        job_id2 = f"wakeup_call2_{record.line_id}"
+        self._scheduler.add_job(
+            self._make_wakeup_call,
+            "date",
+            run_date=call2_time,
+            args=[target_date, record.line_id, 2, tz],
+            id=job_id2,
+            replace_existing=True,
+        )
+        job_ids.append(job_id2)
+
+        # 最終確認（電話②から30秒後）
+        final_job_id = f"wakeup_final_{record.line_id}"
+        self._scheduler.add_job(
+            self._wakeup_final_check,
+            "date",
+            run_date=call2_time + timedelta(seconds=30),
+            args=[target_date, record.line_id, tz],
+            id=final_job_id,
+            replace_existing=True,
+        )
+        job_ids.append(final_job_id)
+
+        self._wakeup_jobs_by_line[record.line_id] = job_ids
+
+    def cancel_departure_calls(self, line_id: str) -> None:
+        """出発電話をキャンセル"""
+        for job_id in self._departure_jobs_by_line.get(line_id, []):
             try:
                 self._scheduler.remove_job(job_id)
             except Exception:
                 pass
-        self._jobs_by_line.pop(line_id, None)
+        self._departure_jobs_by_line.pop(line_id, None)
 
-    async def _make_call_job(self, record_date, line_id: str, index: int) -> None:
+    def cancel_wakeup_calls(self, line_id: str) -> None:
+        """起床電話をキャンセル"""
+        for job_id in self._wakeup_jobs_by_line.get(line_id, []):
+            try:
+                self._scheduler.remove_job(job_id)
+            except Exception:
+                pass
+        self._wakeup_jobs_by_line.pop(line_id, None)
+
+    async def _make_departure_call(
+        self, record_date: date, line_id: str, call_number: int, tz: ZoneInfo
+    ) -> None:
+        """出発電話を発信"""
         found = self._sheet.get_departure_record(record_date, line_id)
         if not found:
             return
         _, record = found
+
+        # 既に報告済みの場合はキャンセル
         if record.actual_departure_time:
-            self.cancel_phone_calls(line_id)
+            self.cancel_departure_calls(line_id)
             return
-        if index == 0 and record.phone_call_count < 1:
-            record.phone_call_count = 1
+
+        # 電話回数を更新
+        if call_number == 1 and record.departure_phone_call_count < 1:
+            record.departure_phone_call_count = 1
             if record.departure_status != DepartureStatus.NEED_CHECK:
                 record.departure_status = DepartureStatus.NEED_CHECK
             self._sheet.upsert_departure_record(record)
-        if index == 5 and record.phone_call_count < 2:
-            record.phone_call_count = 2
+        elif call_number == 2 and record.departure_phone_call_count < 2:
+            record.departure_phone_call_count = 2
             self._sheet.upsert_departure_record(record)
-        phone_number = None
-        for cast in self._sheet.get_casts():
-            if cast.line_id == line_id:
-                phone_number = cast.phone_number
-                break
+
+        # 電話番号を取得
+        phone_number = self._get_phone_number(line_id)
         if not phone_number:
             self._logger.warning("Phone number missing for line_id=%s", line_id)
             return
-        call_sid = await self._twilio.make_call(phone_number, CALL_MESSAGE)
-        if not call_sid:
-            record.control_notes = "電話発信失敗"
-            self._sheet.upsert_departure_record(record)
 
-    async def _final_check_job(self, record_date, line_id: str) -> None:
+        # 電話発信
+        call_sid = await self._twilio.make_call(phone_number, DEPARTURE_CALL_MESSAGE)
+        if not call_sid:
+            self._logger.error("Failed to make departure call for line_id=%s", line_id)
+
+    async def _make_wakeup_call(
+        self, record_date: date, line_id: str, call_number: int, tz: ZoneInfo
+    ) -> None:
+        """起床電話を発信"""
         found = self._sheet.get_departure_record(record_date, line_id)
         if not found:
             return
         _, record = found
-        if record.actual_departure_time:
-            self.cancel_phone_calls(line_id)
+
+        # 既に報告済みの場合はキャンセル
+        if record.actual_wakeup_time:
+            self.cancel_wakeup_calls(line_id)
             return
-        record.departure_status = DepartureStatus.CONTROL
+
+        # 電話回数を更新
+        if call_number == 1 and record.wakeup_phone_call_count < 1:
+            record.wakeup_phone_call_count = 1
+            if record.wakeup_status != WakeupStatus.NEED_CHECK:
+                record.wakeup_status = WakeupStatus.NEED_CHECK
+            self._sheet.upsert_departure_record(record)
+        elif call_number == 2 and record.wakeup_phone_call_count < 2:
+            record.wakeup_phone_call_count = 2
+            self._sheet.upsert_departure_record(record)
+
+        # 電話番号を取得
+        phone_number = self._get_phone_number(line_id)
+        if not phone_number:
+            self._logger.warning("Phone number missing for line_id=%s", line_id)
+            return
+
+        # 電話発信
+        call_sid = await self._twilio.make_call(phone_number, WAKEUP_CALL_MESSAGE)
+        if not call_sid:
+            self._logger.error("Failed to make wakeup call for line_id=%s", line_id)
+
+    async def _departure_final_check(
+        self, record_date: date, line_id: str, tz: ZoneInfo
+    ) -> None:
+        """出発の最終確認"""
+        found = self._sheet.get_departure_record(record_date, line_id)
+        if not found:
+            return
+        _, record = found
+
+        # 既に報告済みの場合はキャンセル
+        if record.actual_departure_time:
+            self.cancel_departure_calls(line_id)
+            return
+
+        # 最終結果を「要管制」に設定
+        record.final_result = FinalResult.NEED_CONTROL
         self._sheet.upsert_departure_record(record)
 
-        now = datetime.now(record.scheduled_departure_time.tzinfo) if record.scheduled_departure_time else datetime.now()
+        # 管制に緊急アラート
+        now = datetime.now(tz)
         scheduled_time = record.scheduled_departure_time.strftime("%H:%M") if record.scheduled_departure_time else ""
         await self._notification.send_emergency_alert(
             name=record.name,
             line_id=record.line_id,
             scheduled_time=scheduled_time,
             now=now.strftime("%Y-%m-%d %H:%M"),
-            phase1_done=True,
-            phase2_done=True,
+            phase1_done=record.departure_phone_call_count >= 1,
+            phase2_done=record.departure_phone_call_count >= 2,
+            alert_type="departure",
         )
+
+    async def _wakeup_final_check(
+        self, record_date: date, line_id: str, tz: ZoneInfo
+    ) -> None:
+        """起床の最終確認"""
+        found = self._sheet.get_departure_record(record_date, line_id)
+        if not found:
+            return
+        _, record = found
+
+        # 既に報告済みの場合はキャンセル
+        if record.actual_wakeup_time:
+            self.cancel_wakeup_calls(line_id)
+            return
+
+        # 最終結果を「要管制」に設定
+        record.final_result = FinalResult.NEED_CONTROL
+        self._sheet.upsert_departure_record(record)
+
+        # 管制に緊急アラート
+        now = datetime.now(tz)
+        scheduled_time = record.scheduled_wakeup_time.strftime("%H:%M") if record.scheduled_wakeup_time else ""
+        await self._notification.send_emergency_alert(
+            name=record.name,
+            line_id=record.line_id,
+            scheduled_time=scheduled_time,
+            now=now.strftime("%Y-%m-%d %H:%M"),
+            phase1_done=record.wakeup_phone_call_count >= 1,
+            phase2_done=record.wakeup_phone_call_count >= 2,
+            alert_type="wakeup",
+        )
+
+    def _get_phone_number(self, line_id: str) -> Optional[str]:
+        """LINE IDから電話番号を取得"""
+        for cast in self._sheet.get_casts():
+            if cast.line_id == line_id:
+                return cast.phone_number
+        return None

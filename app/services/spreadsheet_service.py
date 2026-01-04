@@ -1,39 +1,36 @@
-﻿import json
+"""Google Sheets連携サービス"""
+import json
 from datetime import date, datetime, time
 from typing import List, Optional, Tuple
 
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
-<<<<<<< HEAD
 from zoneinfo import ZoneInfo
 
 from app.config import Settings
-from app.models import Cast, DepartureRecord, DepartureStatus, FinalResult
-=======
-
-from app.config import Settings
-from app.models import Cast, DepartureRecord, DepartureStatus
->>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
+from app.models import Cast, DepartureRecord, DepartureStatus, FinalResult, WakeupStatus
 from app.utils.logger import get_logger
 
 
 CAST_SHEET = "キャスト一覧"
-DEPARTURE_SHEET = "出発見守り_当日管理"
+DEPARTURE_SHEET = "出発予定時間_当日管理"
 
 
 class SpreadsheetService:
+    """Google Sheets サービス"""
+
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
         self._logger = get_logger("spreadsheet_service")
-<<<<<<< HEAD
         self._tz = ZoneInfo(settings.tz)
-=======
->>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
         creds_info = json.loads(settings.google_sheets_credentials_json)
-        creds = Credentials.from_service_account_info(creds_info, scopes=["https://www.googleapis.com/auth/spreadsheets"])
+        creds = Credentials.from_service_account_info(
+            creds_info, scopes=["https://www.googleapis.com/auth/spreadsheets"]
+        )
         self._service = build("sheets", "v4", credentials=creds, cache_discovery=False)
 
     def _get_values(self, sheet_name: str) -> List[List[str]]:
+        """シートの値を取得"""
         result = (
             self._service.spreadsheets()
             .values()
@@ -43,6 +40,7 @@ class SpreadsheetService:
         return result.get("values", [])
 
     def _update_values(self, range_name: str, values: List[List[str]]) -> None:
+        """シートの値を更新"""
         body = {"values": values}
         (
             self._service.spreadsheets()
@@ -57,6 +55,7 @@ class SpreadsheetService:
         )
 
     def _append_values(self, range_name: str, values: List[List[str]]) -> None:
+        """シートに値を追加"""
         body = {"values": values}
         (
             self._service.spreadsheets()
@@ -72,39 +71,87 @@ class SpreadsheetService:
         )
 
     def get_casts(self) -> List[Cast]:
+        """キャスト一覧を取得"""
         rows = self._get_values(CAST_SHEET)
         if not rows:
             return []
         header = rows[0]
         casts: List[Cast] = []
         for row in rows[1:]:
-            data = dict(zip(header, row))
+            data = dict(zip(header, row + [""] * (len(header) - len(row))))
             try:
-                default_time = None
+                # 通常出発予定時間
+                default_departure = None
                 if data.get("通常出発予定時間"):
                     hour, minute = data["通常出発予定時間"].split(":")
-                    default_time = time(int(hour), int(minute))
+                    default_departure = time(int(hour), int(minute))
+
+                # 起床予定時間登録ON/OFF
+                wakeup_enabled = data.get("起床予定時間登録ON/OFF", "").upper() == "TRUE"
+
+                # 通常起床予定時間
+                default_wakeup = None
+                if data.get("通常起床予定時間"):
+                    hour, minute = data["通常起床予定時間"].split(":")
+                    default_wakeup = time(int(hour), int(minute))
+
+                # 起床オフセット
+                wakeup_offset = int(data.get("起床オフセット（分）", 0) or 0)
+
                 cast = Cast(
                     name=data.get("氏名", ""),
                     line_id=data.get("LINE_ID", ""),
                     phone_number=data.get("電話番号", ""),
-                    default_departure_time=default_time,
-                    department=data.get("所属"),
-                    notes=data.get("備考"),
+                    default_departure_time=default_departure,
+                    wakeup_time_registration_enabled=wakeup_enabled,
+                    default_wakeup_time=default_wakeup,
+                    wakeup_offset_minutes=wakeup_offset,
                 )
                 casts.append(cast)
             except Exception as exc:
                 self._logger.warning("Invalid cast row skipped: %s", exc)
         return casts
 
+    def get_cast_by_line_id(self, line_id: str) -> Optional[Cast]:
+        """LINE IDでキャストを取得"""
+        for cast in self.get_casts():
+            if cast.line_id == line_id:
+                return cast
+        return None
+
+    def update_cast_wakeup_setting(self, line_id: str, enabled: bool) -> bool:
+        """キャストの起床設定を更新"""
+        rows = self._get_values(CAST_SHEET)
+        if not rows:
+            return False
+        header = rows[0]
+
+        # 起床予定時間登録ON/OFF列のインデックスを取得
+        try:
+            wakeup_col_idx = header.index("起床予定時間登録ON/OFF")
+        except ValueError:
+            self._logger.warning("起床予定時間登録ON/OFF column not found")
+            return False
+
+        for idx, row in enumerate(rows[1:], start=2):
+            data = dict(zip(header, row + [""] * (len(header) - len(row))))
+            if data.get("LINE_ID") == line_id:
+                # 列番号をアルファベットに変換
+                col_letter = chr(ord("A") + wakeup_col_idx)
+                range_name = f"{CAST_SHEET}!{col_letter}{idx}"
+                self._update_values(range_name, [["TRUE" if enabled else "FALSE"]])
+                return True
+        return False
+
     def get_departure_records(self, target_date: date) -> List[DepartureRecord]:
+        """指定日の出発記録を取得"""
         rows = self._get_values(DEPARTURE_SHEET)
         if not rows:
             return []
         header = rows[0]
         records: List[DepartureRecord] = []
         for row in rows[1:]:
-            data = dict(zip(header, row))
+            data = dict(zip(header, row + [""] * (len(header) - len(row))))
             if data.get("日付") != target_date.isoformat():
                 continue
             record = self._row_to_record(data)
@@ -112,13 +159,16 @@ class SpreadsheetService:
                 records.append(record)
         return records
 
-    def get_departure_record(self, target_date: date, line_id: str) -> Optional[Tuple[int, DepartureRecord]]:
+    def get_departure_record(
+        self, target_date: date, line_id: str
+    ) -> Optional[Tuple[int, DepartureRecord]]:
+        """指定日・LINE IDの出発記録を取得"""
         rows = self._get_values(DEPARTURE_SHEET)
         if not rows:
             return None
         header = rows[0]
         for index, row in enumerate(rows[1:], start=2):
-            data = dict(zip(header, row))
+            data = dict(zip(header, row + [""] * (len(header) - len(row))))
             if data.get("日付") == target_date.isoformat() and data.get("LINE_ID") == line_id:
                 record = self._row_to_record(data)
                 if record:
@@ -126,97 +176,177 @@ class SpreadsheetService:
         return None
 
     def upsert_departure_record(self, record: DepartureRecord) -> None:
-        found = self.get_departure_record(record.date, record.line_id)
+        """出発記録を更新または追加"""
+        target_date = date.fromisoformat(record.date)
+        found = self.get_departure_record(target_date, record.line_id)
         if found:
             row_index, _ = found
-            range_name = f"{DEPARTURE_SHEET}!A{row_index}:I{row_index}"
+            range_name = f"{DEPARTURE_SHEET}!A{row_index}:M{row_index}"
             self._update_values(range_name, [self._record_to_row(record)])
             return
-        self._append_values(f"{DEPARTURE_SHEET}!A:I", [self._record_to_row(record)])
+        self._append_values(f"{DEPARTURE_SHEET}!A:M", [self._record_to_row(record)])
 
-    def update_departure_actual_time(self, target_date: date, line_id: str, actual_time: datetime) -> None:
+    def update_departure_actual_time(
+        self, target_date: date, line_id: str, actual_time: datetime
+    ) -> None:
+        """出発報告時刻を更新"""
         found = self.get_departure_record(target_date, line_id)
         if not found:
             return
-        row_index, record = found
+        _, record = found
         record.actual_departure_time = actual_time
         self.upsert_departure_record(record)
 
-    def update_departure_status(self, target_date: date, line_id: str, status: DepartureStatus) -> None:
+    def update_wakeup_actual_time(
+        self, target_date: date, line_id: str, actual_time: datetime
+    ) -> None:
+        """起床報告時刻を更新"""
         found = self.get_departure_record(target_date, line_id)
         if not found:
             return
-        row_index, record = found
+        _, record = found
+        record.actual_wakeup_time = actual_time
+        self.upsert_departure_record(record)
+
+    def update_departure_status(
+        self, target_date: date, line_id: str, status: DepartureStatus
+    ) -> None:
+        """出発判定を更新"""
+        found = self.get_departure_record(target_date, line_id)
+        if not found:
+            return
+        _, record = found
         record.departure_status = status
         self.upsert_departure_record(record)
 
-    def auto_assign_default_times(self, target_date: date) -> List[str]:
+    def update_wakeup_status(
+        self, target_date: date, line_id: str, status: WakeupStatus
+    ) -> None:
+        """起床判定を更新"""
+        found = self.get_departure_record(target_date, line_id)
+        if not found:
+            return
+        _, record = found
+        record.wakeup_status = status
+        self.upsert_departure_record(record)
+
+    def auto_assign_default_times(self, target_date: date) -> Tuple[List[str], List[str]]:
+        """
+        通常時間を自動採用
+
+        Returns:
+            Tuple[出発予定時間未登録者名リスト, 起床予定時間未登録者名リスト]
+        """
         casts = {cast.line_id: cast for cast in self.get_casts()}
-        missing = []
+        missing_departure = []
+        missing_wakeup = []
+
         for line_id, cast in casts.items():
             found = self.get_departure_record(target_date, line_id)
+
             if not found:
-                if cast.default_departure_time is None:
-                    missing.append(cast.name)
-                    continue
-<<<<<<< HEAD
-                scheduled = datetime.combine(target_date, cast.default_departure_time, tzinfo=self._tz)
-=======
-                scheduled = datetime.combine(target_date, cast.default_departure_time)
->>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
+                # レコードが存在しない場合、新規作成
+                scheduled_departure = None
+                scheduled_wakeup = None
+
+                if cast.default_departure_time:
+                    scheduled_departure = cast.default_departure_time
+                else:
+                    missing_departure.append(cast.name)
+
+                if cast.wakeup_time_registration_enabled:
+                    if cast.default_wakeup_time:
+                        scheduled_wakeup = cast.default_wakeup_time
+                    else:
+                        missing_wakeup.append(cast.name)
+
                 record = DepartureRecord(
-                    date=target_date,
+                    date=target_date.isoformat(),
                     name=cast.name,
                     line_id=cast.line_id,
-                    scheduled_departure_time=scheduled,
+                    scheduled_departure_time=scheduled_departure,
+                    scheduled_wakeup_time=scheduled_wakeup,
                 )
                 self.upsert_departure_record(record)
                 continue
+
             _, record = found
+
+            # 出発予定時間の自動設定
             if record.scheduled_departure_time is None:
-                if cast.default_departure_time is None:
-                    missing.append(cast.name)
-                    continue
-<<<<<<< HEAD
-                record.scheduled_departure_time = datetime.combine(target_date, cast.default_departure_time, tzinfo=self._tz)
-=======
-                record.scheduled_departure_time = datetime.combine(target_date, cast.default_departure_time)
->>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
-                self.upsert_departure_record(record)
-        return missing
+                if cast.default_departure_time:
+                    record.scheduled_departure_time = cast.default_departure_time
+                    self.upsert_departure_record(record)
+                else:
+                    missing_departure.append(cast.name)
+
+            # 起床予定時間の自動設定（起床予定時間がONのキャストのみ）
+            if cast.wakeup_time_registration_enabled and record.scheduled_wakeup_time is None:
+                if cast.default_wakeup_time:
+                    record.scheduled_wakeup_time = cast.default_wakeup_time
+                    self.upsert_departure_record(record)
+                else:
+                    missing_wakeup.append(cast.name)
+
+        return missing_departure, missing_wakeup
 
     def _row_to_record(self, data: dict) -> Optional[DepartureRecord]:
+        """行データをDepartureRecordに変換"""
         try:
-            scheduled = None
+            # 出発予定時間
+            scheduled_departure = None
             if data.get("出発予定時間"):
-<<<<<<< HEAD
-                scheduled = self._ensure_timezone(datetime.fromisoformat(data["出発予定時間"]))
-            actual = None
-            if data.get("出発時間"):
-                actual = self._ensure_timezone(datetime.fromisoformat(data["出発時間"]))
-            status = data.get("出発判定") or None
-            final = data.get("最終結果") or None
-=======
-                scheduled = datetime.fromisoformat(data["出発予定時間"])
-            actual = None
-            if data.get("出発時間"):
-                actual = datetime.fromisoformat(data["出発時間"])
-            status = data.get("出発判定") or None
->>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
+                hour, minute = data["出発予定時間"].split(":")
+                scheduled_departure = time(int(hour), int(minute))
+
+            # 出発報告時刻
+            actual_departure = None
+            if data.get("出発報告時刻"):
+                actual_departure = self._ensure_timezone(
+                    datetime.fromisoformat(data["出発報告時刻"])
+                )
+
+            # 出発判定
+            departure_status = None
+            if data.get("出発判定"):
+                departure_status = DepartureStatus(data["出発判定"])
+
+            # 起床予定時間
+            scheduled_wakeup = None
+            if data.get("起床予定時間"):
+                hour, minute = data["起床予定時間"].split(":")
+                scheduled_wakeup = time(int(hour), int(minute))
+
+            # 起床報告時刻
+            actual_wakeup = None
+            if data.get("起床報告時刻"):
+                actual_wakeup = self._ensure_timezone(
+                    datetime.fromisoformat(data["起床報告時刻"])
+                )
+
+            # 起床判定
+            wakeup_status = None
+            if data.get("起床判定"):
+                wakeup_status = WakeupStatus(data["起床判定"])
+
+            # 最終結果
+            final_result = None
+            if data.get("最終結果"):
+                final_result = FinalResult(data["最終結果"])
+
             record = DepartureRecord(
-                date=date.fromisoformat(data.get("日付")),
+                date=data.get("日付", ""),
                 name=data.get("氏名", ""),
                 line_id=data.get("LINE_ID", ""),
-                scheduled_departure_time=scheduled,
-                actual_departure_time=actual,
-                departure_status=DepartureStatus(status) if status else None,
-                phone_call_count=int(data.get("出発電話回数", 0) or 0),
-<<<<<<< HEAD
-                final_result=FinalResult(final) if final else None,
-=======
-                final_result=None,
->>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
-                control_notes=data.get("管制メモ"),
+                scheduled_departure_time=scheduled_departure,
+                actual_departure_time=actual_departure,
+                departure_status=departure_status,
+                departure_phone_call_count=int(data.get("出発電話発信回数", 0) or 0),
+                scheduled_wakeup_time=scheduled_wakeup,
+                actual_wakeup_time=actual_wakeup,
+                wakeup_status=wakeup_status,
+                wakeup_phone_call_count=int(data.get("起床電話発信回数", 0) or 0),
+                final_result=final_result,
             )
             return record
         except Exception as exc:
@@ -224,22 +354,24 @@ class SpreadsheetService:
             return None
 
     def _record_to_row(self, record: DepartureRecord) -> List[str]:
+        """DepartureRecordを行データに変換"""
         return [
-            record.date.isoformat(),
+            record.date,
             record.name,
             record.line_id,
-            record.scheduled_departure_time.isoformat(sep=" ") if record.scheduled_departure_time else "",
+            record.scheduled_departure_time.strftime("%H:%M") if record.scheduled_departure_time else "",
             record.actual_departure_time.isoformat(sep=" ") if record.actual_departure_time else "",
             record.departure_status.value if record.departure_status else "",
-            str(record.phone_call_count),
+            str(record.departure_phone_call_count),
+            record.scheduled_wakeup_time.strftime("%H:%M") if record.scheduled_wakeup_time else "",
+            record.actual_wakeup_time.isoformat(sep=" ") if record.actual_wakeup_time else "",
+            record.wakeup_status.value if record.wakeup_status else "",
+            str(record.wakeup_phone_call_count),
             record.final_result.value if record.final_result else "",
-            record.control_notes or "",
         ]
-<<<<<<< HEAD
 
     def _ensure_timezone(self, value: datetime) -> datetime:
+        """タイムゾーンを付与"""
         if value.tzinfo is None:
             return value.replace(tzinfo=self._tz)
         return value.astimezone(self._tz)
-=======
->>>>>>> 394f6e5b5be191414b6d75579e5e0b9097ea38c9
