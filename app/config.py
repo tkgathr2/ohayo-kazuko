@@ -53,6 +53,14 @@ class Settings(BaseSettings):
     api_host: str = Field("0.0.0.0", alias="API_HOST")
     api_port: int = Field(8000, alias="API_PORT")
 
+    # MVP機能フラグ（デフォルト: False = MVPモード）
+    enable_wakeup_watch: bool = Field(False, alias="ENABLE_WAKEUP_WATCH")
+    enable_procast: bool = Field(False, alias="ENABLE_PROCAST")
+    enable_phone_call2: bool = Field(False, alias="ENABLE_PHONE_CALL2")
+    enable_slack: bool = Field(False, alias="ENABLE_SLACK")
+    enable_multiple_reminders: bool = Field(False, alias="ENABLE_MULTIPLE_REMINDERS")
+    enable_auto_assign: bool = Field(False, alias="ENABLE_AUTO_ASSIGN")
+
     @field_validator("twilio_account_sid")
     @classmethod
     def validate_twilio_account_sid(cls, value: str) -> str:
