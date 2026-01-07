@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     slack_webhook_url: Optional[str] = Field(None, alias="SLACK_WEBHOOK_URL")
 
     # 管制LINE ID
-    control_line_id: Optional[str] = Field(None, alias="CONTROL_LINE_ID")
+    control_line_id: str = Field(..., alias="CONTROL_LINE_ID")
 
     # 髙木LINE ID（Procast未取得通知用）
     takagi_line_id: Optional[str] = Field(None, alias="TAKAGI_LINE_ID")
@@ -85,6 +85,7 @@ def ensure_required_env() -> None:
         "TWILIO_PHONE_NUMBER",
         "GOOGLE_SHEETS_CREDENTIALS_JSON",
         "GOOGLE_SHEETS_SPREADSHEET_ID",
+        "CONTROL_LINE_ID",
     ):
         if not os.getenv(key):
             missing.append(key)
