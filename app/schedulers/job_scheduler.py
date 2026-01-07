@@ -4,6 +4,7 @@ from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from app.config import Settings
 from app.services.notification_service import NotificationService
 from app.services.phone_service import PhoneService
 from app.services.procast_service import ProcastService
@@ -17,13 +18,16 @@ def start_scheduler(
     phone_service: PhoneService,
     sheet_service: SpreadsheetService,
     procast_service: ProcastService,
+    settings: Settings,
 ) -> None:
     """スケジューラーを開始"""
     logger = get_logger("job_scheduler")
     tz = ZoneInfo("Asia/Tokyo")
 
-    # リマインドジョブ（18:00, 19:00, 20:00, 21:00, 22:00）
-    for hour in [18, 19, 20, 21, 22]:
+    # リマインドジョブ
+    # enable_multiple_remindersがFalseの場合は20:00のみ、Trueの場合は18:00, 19:00, 20:00, 21:00, 22:00
+    reminder_hours = [18, 19, 20, 21, 22] if settings.enable_multiple_reminders else [20]
+    for hour in reminder_hours:
         # 出発予定時間リマインド
         scheduler.add_job(
             _remind_departure_unregistered,
@@ -35,28 +39,30 @@ def start_scheduler(
             id=f"remind_departure_{hour}",
             replace_existing=True,
         )
-        # 起床予定時間リマインド
-        scheduler.add_job(
-            _remind_wakeup_unregistered,
-            "cron",
-            hour=hour,
-            minute=0,
-            timezone=tz,
-            args=[notification_service, procast_service, tz],
-            id=f"remind_wakeup_{hour}",
-            replace_existing=True,
-        )
-        # Procastデータ未取得通知
-        scheduler.add_job(
-            _notify_procast_missing,
-            "cron",
-            hour=hour,
-            minute=0,
-            timezone=tz,
-            args=[notification_service, procast_service, hour],
-            id=f"procast_missing_{hour}",
-            replace_existing=True,
-        )
+        # 起床予定時間リマインド（enable_wakeup_watch有効時のみ）
+        if settings.enable_wakeup_watch:
+            scheduler.add_job(
+                _remind_wakeup_unregistered,
+                "cron",
+                hour=hour,
+                minute=0,
+                timezone=tz,
+                args=[notification_service, procast_service, tz],
+                id=f"remind_wakeup_{hour}",
+                replace_existing=True,
+            )
+        # Procastデータ未取得通知（enable_procast有効時のみ）
+        if settings.enable_procast:
+            scheduler.add_job(
+                _notify_procast_missing,
+                "cron",
+                hour=hour,
+                minute=0,
+                timezone=tz,
+                args=[notification_service, procast_service, hour],
+                id=f"procast_missing_{hour}",
+                replace_existing=True,
+            )
 
     # 管制通知ジョブ（22:30）
     scheduler.add_job(
@@ -70,35 +76,37 @@ def start_scheduler(
         replace_existing=True,
     )
 
-    # 通常時間自動採用ジョブ（24:00 = 0:00）
-    scheduler.add_job(
-        _auto_assign_and_schedule,
-        "cron",
-        hour=0,
-        minute=0,
-        timezone=tz,
-        args=[notification_service, phone_service, sheet_service, tz],
-        id="auto_assign_default",
-        replace_existing=True,
-    )
+    # 通常時間自動採用ジョブ（24:00 = 0:00）（enable_auto_assign有効時のみ）
+    if settings.enable_auto_assign:
+        scheduler.add_job(
+            _auto_assign_and_schedule,
+            "cron",
+            hour=0,
+            minute=0,
+            timezone=tz,
+            args=[notification_service, phone_service, sheet_service, tz, settings],
+            id="auto_assign_default",
+            replace_existing=True,
+        )
 
-    # Procastデータ取得ジョブ（18:00）
-    scheduler.add_job(
-        _fetch_procast_data,
-        "cron",
-        hour=18,
-        minute=0,
-        timezone=tz,
-        args=[procast_service],
-        id="fetch_procast",
-        replace_existing=True,
-    )
+    # Procastデータ取得ジョブ（18:00）（enable_procast有効時のみ）
+    if settings.enable_procast:
+        scheduler.add_job(
+            _fetch_procast_data,
+            "cron",
+            hour=18,
+            minute=0,
+            timezone=tz,
+            args=[procast_service],
+            id="fetch_procast",
+            replace_existing=True,
+        )
 
     scheduler.start()
     logger.info("Scheduler started")
 
     # 起動時に既存の電話をスケジュール
-    _schedule_existing_calls(phone_service, sheet_service, tz)
+    _schedule_existing_calls(phone_service, sheet_service, tz, settings)
 
 
 def _tomorrow_date(tz: ZoneInfo):
@@ -172,6 +180,7 @@ async def _auto_assign_and_schedule(
     phone_service: PhoneService,
     sheet_service: SpreadsheetService,
     tz: ZoneInfo,
+    settings: Settings,
 ) -> None:
     """通常時間を自動採用し、電話をスケジュール"""
     target_date = datetime.now(tz).date()
@@ -186,7 +195,7 @@ async def _auto_assign_and_schedule(
         )
 
     # 電話をスケジュール
-    _schedule_calls_for_date(phone_service, sheet_service, target_date, tz)
+    _schedule_calls_for_date(phone_service, sheet_service, target_date, tz, settings)
 
 
 async def _fetch_procast_data(procast_service: ProcastService) -> None:
@@ -198,10 +207,11 @@ def _schedule_existing_calls(
     phone_service: PhoneService,
     sheet_service: SpreadsheetService,
     tz: ZoneInfo,
+    settings: Settings,
 ) -> None:
     """起動時に既存の電話をスケジュール"""
     today = datetime.now(tz).date()
-    _schedule_calls_for_date(phone_service, sheet_service, today, tz)
+    _schedule_calls_for_date(phone_service, sheet_service, today, tz, settings)
 
 
 def _schedule_calls_for_date(
@@ -209,6 +219,7 @@ def _schedule_calls_for_date(
     sheet_service: SpreadsheetService,
     target_date,
     tz: ZoneInfo,
+    settings: Settings,
 ) -> None:
     """指定日の電話をスケジュール"""
     now = datetime.now(tz)
@@ -222,13 +233,13 @@ def _schedule_calls_for_date(
             )
             # 予定時間+5分（電話①の時間）がまだ来ていない場合
             if scheduled_dt + timedelta(minutes=5) > now:
-                phone_service.schedule_departure_calls(record, tz)
+                phone_service.schedule_departure_calls(record, tz, settings)
 
-        # 起床電話のスケジュール
-        if record.scheduled_wakeup_time and not record.actual_wakeup_time:
+        # 起床電話のスケジュール（enable_wakeup_watch有効時のみ）
+        if settings.enable_wakeup_watch and record.scheduled_wakeup_time and not record.actual_wakeup_time:
             scheduled_dt = datetime.combine(
                 target_date, record.scheduled_wakeup_time, tzinfo=tz
             )
             # 予定時間+5分（電話①の時間）がまだ来ていない場合
             if scheduled_dt + timedelta(minutes=5) > now:
-                phone_service.schedule_wakeup_calls(record, tz)
+                phone_service.schedule_wakeup_calls(record, tz, settings)

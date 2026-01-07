@@ -16,17 +16,18 @@ router = APIRouter()
 
 
 def _get_services(request: Request):
-    """リクエストからサービスを取得"""
+    """リクエストからサービスと設定を取得"""
     line_service = request.app.state.line_service
     sheet_service = request.app.state.sheet_service
     phone_service = request.app.state.phone_service
-    return line_service, sheet_service, phone_service
+    settings = request.app.state.settings
+    return line_service, sheet_service, phone_service, settings
 
 
 @router.post("/webhook/line")
 async def line_webhook(request: Request):
     """LINE Webhook エンドポイント"""
-    line_service, sheet_service, phone_service = _get_services(request)
+    line_service, sheet_service, phone_service, settings = _get_services(request)
     body = await request.body()
     signature = request.headers.get("X-Line-Signature", "")
 
@@ -63,18 +64,18 @@ async def line_webhook(request: Request):
                     event, line_id, line_service, sheet_service, phone_service, tz, logger
                 )
 
-            # 起床報告
-            elif action == "wakeup_report":
+            # 起床報告（enable_wakeup_watch有効時のみ）
+            elif action == "wakeup_report" and settings.enable_wakeup_watch:
                 await _handle_wakeup_report(
                     event, line_id, line_service, sheet_service, phone_service, tz, logger
                 )
 
-            # 起床予定時間ON
-            elif action == "enable_wakeup_watch":
+            # 起床予定時間ON（enable_wakeup_watch有効時のみ）
+            elif action == "enable_wakeup_watch" and settings.enable_wakeup_watch:
                 await _handle_wakeup_toggle(line_id, True, line_service, sheet_service, logger)
 
-            # 起床予定時間OFF
-            elif action == "disable_wakeup_watch":
+            # 起床予定時間OFF（enable_wakeup_watch有効時のみ）
+            elif action == "disable_wakeup_watch" and settings.enable_wakeup_watch:
                 await _handle_wakeup_toggle(line_id, False, line_service, sheet_service, logger)
 
         # メッセージイベント処理
@@ -85,7 +86,7 @@ async def line_webhook(request: Request):
 
             text = message.get("text", "").strip()
             await _handle_text_message(
-                text, line_id, line_service, sheet_service, tz, logger
+                text, line_id, line_service, sheet_service, tz, logger, settings
             )
 
     return {"status": "ok"}
@@ -202,38 +203,42 @@ async def _handle_wakeup_toggle(line_id, enabled, line_service, sheet_service, l
         await line_service.send_message(line_id, "設定の更新に失敗しました。")
 
 
-async def _handle_text_message(text, line_id, line_service, sheet_service, tz, logger):
+async def _handle_text_message(text, line_id, line_service, sheet_service, tz, logger, settings):
     """テキストメッセージを処理"""
     # 「出発 HH:MM」形式
     departure_match = re.match(r"^出発\s*(\d{1,2}:\d{2})$", text)
     if departure_match:
         time_str = departure_match.group(1)
         await _register_time(
-            line_id, time_str, "departure", line_service, sheet_service, tz, logger
+            line_id, time_str, "departure", line_service, sheet_service, tz, logger, settings
         )
         return
 
-    # 「起床 HH:MM」形式
+    # 「起床 HH:MM」形式（enable_wakeup_watch有効時のみ）
     wakeup_match = re.match(r"^起床\s*(\d{1,2}:\d{2})$", text)
-    if wakeup_match:
+    if wakeup_match and settings.enable_wakeup_watch:
         time_str = wakeup_match.group(1)
         await _register_time(
-            line_id, time_str, "wakeup", line_service, sheet_service, tz, logger
+            line_id, time_str, "wakeup", line_service, sheet_service, tz, logger, settings
         )
         return
 
     # 「HH:MM」形式（出発予定時間として登録）
     if validate_time_string(text):
         await _register_time(
-            line_id, text, "departure", line_service, sheet_service, tz, logger
+            line_id, text, "departure", line_service, sheet_service, tz, logger, settings
         )
         return
 
 
 async def _register_time(
-    line_id, time_str, time_type, line_service, sheet_service, tz, logger
+    line_id, time_str, time_type, line_service, sheet_service, tz, logger, settings
 ):
     """時間を登録"""
+    # 起床予定時間の場合、enable_wakeup_watch有効かチェック
+    if time_type == "wakeup" and not settings.enable_wakeup_watch:
+        return
+
     time_value = parse_time_string(time_str)
     if time_value is None:
         await line_service.send_message(
@@ -246,7 +251,7 @@ async def _register_time(
         await line_service.send_message(line_id, "登録情報が見つかりません。")
         return
 
-    # 起床予定時間の場合、機能がONか確認
+    # 起床予定時間の場合、キャストの機能がONか確認
     if time_type == "wakeup" and not cast.wakeup_time_registration_enabled:
         await line_service.send_message(
             line_id,

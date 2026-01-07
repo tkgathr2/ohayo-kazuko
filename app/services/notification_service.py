@@ -243,6 +243,10 @@ class NotificationService:
         Returns:
             送信成功時True
         """
+        # enable_procast無効時はスキップ
+        if not self._settings.enable_procast:
+            return True
+
         message = "おはよう和子さんへのProcastデータが取得されていません。取り込みをお願いします"
 
         # 通知先を決定
@@ -284,6 +288,10 @@ class NotificationService:
         Returns:
             送信成功時True
         """
+        # enable_slack無効時はスキップ
+        if not self._settings.enable_slack:
+            return True
+
         if not self._settings.slack_webhook_url:
             self._logger.warning("SLACK_WEBHOOK_URL not set; skipping Slack notification")
             return False

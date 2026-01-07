@@ -31,6 +31,13 @@ def mock_env_vars() -> Generator[None, None, None]:
         "TZ": "Asia/Tokyo",
         "LOG_LEVEL": "DEBUG",
         "LOG_FILE": "./logs/test.log",
+        # MVP機能フラグ（デフォルトでテスト用に全て有効化）
+        "ENABLE_WAKEUP_WATCH": "true",
+        "ENABLE_PROCAST": "true",
+        "ENABLE_PHONE_CALL2": "true",
+        "ENABLE_SLACK": "true",
+        "ENABLE_MULTIPLE_REMINDERS": "true",
+        "ENABLE_AUTO_ASSIGN": "true",
     }
     with patch.dict(os.environ, env_vars, clear=False):
         yield

@@ -36,6 +36,7 @@ def create_app() -> FastAPI:
     app.state.phone_service = phone_service
     app.state.notification_service = notification_service
     app.state.procast_service = procast_service
+    app.state.settings = settings
 
     app.include_router(webhook_router)
 
@@ -47,6 +48,7 @@ def create_app() -> FastAPI:
             phone_service,
             sheet_service,
             procast_service,
+            settings,
         )
 
     @app.on_event("shutdown")

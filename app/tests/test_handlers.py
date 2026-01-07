@@ -5,6 +5,7 @@ import httpx
 from fastapi import FastAPI
 from starlette.testclient import TestClient
 
+from app.config import get_settings
 from app.handlers.webhook_handler import router
 from app.models import DepartureRecord
 
@@ -69,6 +70,7 @@ def build_app():
     app.state.line_service = FakeLineService()
     app.state.sheet_service = FakeSheetService()
     app.state.phone_service = FakePhoneService()
+    app.state.settings = get_settings()
     return app
 
 

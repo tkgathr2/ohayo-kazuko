@@ -5,6 +5,7 @@ from typing import Dict, List, Optional
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from zoneinfo import ZoneInfo
 
+from app.config import Settings
 from app.models import DepartureRecord, DepartureStatus, FinalResult, WakeupStatus
 from app.services.notification_service import NotificationService
 from app.services.spreadsheet_service import SpreadsheetService
@@ -37,12 +38,12 @@ class PhoneService:
         # 起床電話のジョブID
         self._wakeup_jobs_by_line: Dict[str, List[str]] = {}
 
-    def schedule_departure_calls(self, record: DepartureRecord, tz: ZoneInfo) -> None:
+    def schedule_departure_calls(self, record: DepartureRecord, tz: ZoneInfo, settings: Settings) -> None:
         """
         出発電話をスケジュール
 
         - 電話①: 出発予定時間から5分経過後
-        - 電話②: 電話①から10分経過後
+        - 電話②: 電話①から10分経過後（enable_phone_call2有効時のみ）
         """
         if not record.scheduled_departure_time:
             return
@@ -69,38 +70,51 @@ class PhoneService:
         )
         job_ids.append(job_id1)
 
-        # 電話②
-        job_id2 = f"departure_call2_{record.line_id}"
-        self._scheduler.add_job(
-            self._make_departure_call,
-            "date",
-            run_date=call2_time,
-            args=[target_date, record.line_id, 2, tz],
-            id=job_id2,
-            replace_existing=True,
-        )
-        job_ids.append(job_id2)
+        # 電話②（enable_phone_call2有効時のみ）
+        if settings.enable_phone_call2:
+            job_id2 = f"departure_call2_{record.line_id}"
+            self._scheduler.add_job(
+                self._make_departure_call,
+                "date",
+                run_date=call2_time,
+                args=[target_date, record.line_id, 2, tz],
+                id=job_id2,
+                replace_existing=True,
+            )
+            job_ids.append(job_id2)
 
-        # 最終確認（電話②から30秒後）
-        final_job_id = f"departure_final_{record.line_id}"
-        self._scheduler.add_job(
-            self._departure_final_check,
-            "date",
-            run_date=call2_time + timedelta(seconds=30),
-            args=[target_date, record.line_id, tz],
-            id=final_job_id,
-            replace_existing=True,
-        )
-        job_ids.append(final_job_id)
+            # 最終確認（電話②から30秒後）
+            final_job_id = f"departure_final_{record.line_id}"
+            self._scheduler.add_job(
+                self._departure_final_check,
+                "date",
+                run_date=call2_time + timedelta(seconds=30),
+                args=[target_date, record.line_id, tz],
+                id=final_job_id,
+                replace_existing=True,
+            )
+            job_ids.append(final_job_id)
+        else:
+            # 電話②が無効の場合、電話①から30秒後に最終確認
+            final_job_id = f"departure_final_{record.line_id}"
+            self._scheduler.add_job(
+                self._departure_final_check,
+                "date",
+                run_date=call1_time + timedelta(seconds=30),
+                args=[target_date, record.line_id, tz],
+                id=final_job_id,
+                replace_existing=True,
+            )
+            job_ids.append(final_job_id)
 
         self._departure_jobs_by_line[record.line_id] = job_ids
 
-    def schedule_wakeup_calls(self, record: DepartureRecord, tz: ZoneInfo) -> None:
+    def schedule_wakeup_calls(self, record: DepartureRecord, tz: ZoneInfo, settings: Settings) -> None:
         """
         起床電話をスケジュール
 
         - 電話①: 起床予定時間から5分経過後
-        - 電話②: 電話①から10分経過後
+        - 電話②: 電話①から10分経過後（enable_phone_call2有効時のみ）
         """
         if not record.scheduled_wakeup_time:
             return
@@ -127,29 +141,42 @@ class PhoneService:
         )
         job_ids.append(job_id1)
 
-        # 電話②
-        job_id2 = f"wakeup_call2_{record.line_id}"
-        self._scheduler.add_job(
-            self._make_wakeup_call,
-            "date",
-            run_date=call2_time,
-            args=[target_date, record.line_id, 2, tz],
-            id=job_id2,
-            replace_existing=True,
-        )
-        job_ids.append(job_id2)
+        # 電話②（enable_phone_call2有効時のみ）
+        if settings.enable_phone_call2:
+            job_id2 = f"wakeup_call2_{record.line_id}"
+            self._scheduler.add_job(
+                self._make_wakeup_call,
+                "date",
+                run_date=call2_time,
+                args=[target_date, record.line_id, 2, tz],
+                id=job_id2,
+                replace_existing=True,
+            )
+            job_ids.append(job_id2)
 
-        # 最終確認（電話②から30秒後）
-        final_job_id = f"wakeup_final_{record.line_id}"
-        self._scheduler.add_job(
-            self._wakeup_final_check,
-            "date",
-            run_date=call2_time + timedelta(seconds=30),
-            args=[target_date, record.line_id, tz],
-            id=final_job_id,
-            replace_existing=True,
-        )
-        job_ids.append(final_job_id)
+            # 最終確認（電話②から30秒後）
+            final_job_id = f"wakeup_final_{record.line_id}"
+            self._scheduler.add_job(
+                self._wakeup_final_check,
+                "date",
+                run_date=call2_time + timedelta(seconds=30),
+                args=[target_date, record.line_id, tz],
+                id=final_job_id,
+                replace_existing=True,
+            )
+            job_ids.append(final_job_id)
+        else:
+            # 電話②が無効の場合、電話①から30秒後に最終確認
+            final_job_id = f"wakeup_final_{record.line_id}"
+            self._scheduler.add_job(
+                self._wakeup_final_check,
+                "date",
+                run_date=call1_time + timedelta(seconds=30),
+                args=[target_date, record.line_id, tz],
+                id=final_job_id,
+                replace_existing=True,
+            )
+            job_ids.append(final_job_id)
 
         self._wakeup_jobs_by_line[record.line_id] = job_ids
 
