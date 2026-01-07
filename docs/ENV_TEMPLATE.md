@@ -33,7 +33,8 @@ TWILIO_PHONE_NUMBER=+819012345678
 GOOGLE_SHEETS_CREDENTIALS_JSON={"type": "service_account", "project_id": "your-project-id", ...}
 GOOGLE_SHEETS_SPREADSHEET_ID=your_spreadsheet_id_here
 
-# 管制LINE ID
+# 管制LINE ID（カンマ区切りで複数指定可能）
+# 例: CONTROL_LINE_ID=U5709d266e428a4e63d07c053e458b15f,Ud3a8a0fc1278d068a5f715d6972cc4c3
 CONTROL_LINE_ID=Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # ============================================
@@ -78,7 +79,7 @@ API_PORT=8000
 | `TWILIO_PHONE_NUMBER` | Twilio電話番号（E.164形式） | Twilio Console |
 | `GOOGLE_SHEETS_CREDENTIALS_JSON` | Google Sheets認証情報（JSON形式） | Google Cloud Console |
 | `GOOGLE_SHEETS_SPREADSHEET_ID` | Google SheetsスプレッドシートID | Google Sheets URL |
-| `CONTROL_LINE_ID` | 管制LINE ID | LINE Botから取得 |
+| `CONTROL_LINE_ID` | 管制LINE ID（カンマ区切りで複数指定可能） | LINE Botから取得 |
 
 ### オプション環境変数
 

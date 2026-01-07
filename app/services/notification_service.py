@@ -113,7 +113,15 @@ class NotificationService:
             return True
 
         message = "\n\n".join(messages)
-        return await self._line.send_message(self._settings.control_line_id, message)
+
+        # 複数の管制担当者に送信
+        success = True
+        for control_id in self._settings.control_line_ids:
+            ok = await self._line.send_message(control_id, message)
+            if not ok:
+                success = False
+
+        return success
 
     async def send_emergency_alert(
         self,
@@ -160,7 +168,15 @@ class NotificationService:
             f"電話①: {'完了' if phase1_done else '未完了'}\n"
             f"電話②: {'完了' if phase2_done else '未完了'}"
         )
-        return await self._line.send_message(self._settings.control_line_id, message)
+
+        # 複数の管制担当者に送信
+        success = True
+        for control_id in self._settings.control_line_ids:
+            ok = await self._line.send_message(control_id, message)
+            if not ok:
+                success = False
+
+        return success
 
     async def notify_control_missing_default(
         self,
@@ -207,7 +223,15 @@ class NotificationService:
             return True
 
         message = "\n\n".join(messages)
-        return await self._line.send_message(self._settings.control_line_id, message)
+
+        # 複数の管制担当者に送信
+        success = True
+        for control_id in self._settings.control_line_ids:
+            ok = await self._line.send_message(control_id, message)
+            if not ok:
+                success = False
+
+        return success
 
     async def notify_procast_data_missing(self, hour: int) -> bool:
         """
@@ -225,7 +249,7 @@ class NotificationService:
         recipients = []
 
         if self._settings.control_line_id:
-            recipients.append(self._settings.control_line_id)
+            recipients.extend(self._settings.control_line_ids)
 
         # 20:00以降は髙木にも通知
         if hour >= 20 and self._settings.takagi_line_id:

@@ -1,6 +1,6 @@
 """設定管理"""
 import os
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -31,11 +31,16 @@ class Settings(BaseSettings):
     # Slack Webhook（エラー通知用）
     slack_webhook_url: Optional[str] = Field(None, alias="SLACK_WEBHOOK_URL")
 
-    # 管制LINE ID
+    # 管制LINE ID（カンマ区切りで複数指定可能）
     control_line_id: str = Field(..., alias="CONTROL_LINE_ID")
 
     # 髙木LINE ID（Procast未取得通知用）
     takagi_line_id: Optional[str] = Field(None, alias="TAKAGI_LINE_ID")
+
+    @property
+    def control_line_ids(self) -> List[str]:
+        """管制LINE IDをリストとして取得"""
+        return [id.strip() for id in self.control_line_id.split(",") if id.strip()]
 
     # タイムゾーン
     tz: str = Field("Asia/Tokyo", alias="TZ")
