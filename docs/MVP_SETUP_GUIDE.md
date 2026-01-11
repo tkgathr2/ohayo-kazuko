@@ -135,7 +135,7 @@ INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 別のターミナルで以下を実行:
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8000/api/ohayo-kazuko/v1/health
 ```
 
 **期待される応答**:

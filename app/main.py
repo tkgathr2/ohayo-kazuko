@@ -38,7 +38,9 @@ def create_app() -> FastAPI:
     app.state.procast_service = procast_service
     app.state.settings = settings
 
-    app.include_router(webhook_router)
+    # ベースパスを設定（他システムとの衝突を避けるため一意のパスを使用）
+    api_prefix = "/api/ohayo-kazuko/v1"
+    app.include_router(webhook_router, prefix=api_prefix)
 
     @app.on_event("startup")
     async def startup_event() -> None:
@@ -57,7 +59,7 @@ def create_app() -> FastAPI:
         await line_service.close()
         await twilio_service.close()
 
-    @app.get("/health")
+    @app.get(f"{api_prefix}/health")
     async def health() -> dict:
         now = datetime.now(ZoneInfo(settings.tz))
         return {"status": "healthy", "timestamp": now.isoformat()}

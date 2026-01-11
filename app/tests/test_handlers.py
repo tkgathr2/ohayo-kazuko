@@ -66,7 +66,9 @@ class FakePhoneService:
 
 def build_app():
     app = FastAPI()
-    app.include_router(router)
+    # ベースパスを設定（本番と同様）
+    api_prefix = "/api/ohayo-kazuko/v1"
+    app.include_router(router, prefix=api_prefix)
     app.state.line_service = FakeLineService()
     app.state.sheet_service = FakeSheetService()
     app.state.phone_service = FakePhoneService()
@@ -86,7 +88,7 @@ def test_register_time_message():
             }
         ]
     }
-    resp = client.post("/webhook/line", json=body, headers={"X-Line-Signature": "test"})
+    resp = client.post("/api/ohayo-kazuko/v1/webhook/line", json=body, headers={"X-Line-Signature": "test"})
     assert resp.status_code == 200
     records = app.state.sheet_service.records
     assert records
@@ -115,7 +117,7 @@ def test_departure_report_postback():
             }
         ]
     }
-    resp = client.post("/webhook/line", json=body, headers={"X-Line-Signature": "test"})
+    resp = client.post("/api/ohayo-kazuko/v1/webhook/line", json=body, headers={"X-Line-Signature": "test"})
     assert resp.status_code == 200
     updated = app.state.sheet_service.get_departure_record(record.date, "U1")[1]
     assert updated.actual_departure_time is not None

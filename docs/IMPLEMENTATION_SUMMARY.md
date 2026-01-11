@@ -347,7 +347,7 @@ class DepartureRecord(BaseModel):
 
 4. **LINE Webhook URLの設定**
    - LINE Developers ConsoleでWebhook URLを設定
-   - Webhook URL: `https://your-domain.com/webhook/line`
+   - Webhook URL: `https://your-domain.com/api/ohayo-kazuko/v1/webhook/line`
 
 ---
 
@@ -385,7 +385,7 @@ class DepartureRecord(BaseModel):
    - LINE Webhook URL設定
 
 2. **動作確認**
-   - ヘルスチェック: `curl http://localhost:8000/health`
+   - ヘルスチェック: `curl http://localhost:8000/api/ohayo-kazuko/v1/health`
    - LINE Botの動作確認
    - スケジューラーの動作確認
 
@@ -747,7 +747,7 @@ class DepartureRecord(BaseModel):
 
 4. **LINE Webhook URLの設定**
    - LINE Developers ConsoleでWebhook URLを設定
-   - Webhook URL: `https://your-domain.com/webhook/line`
+   - Webhook URL: `https://your-domain.com/api/ohayo-kazuko/v1/webhook/line`
 
 ---
 
@@ -785,7 +785,7 @@ class DepartureRecord(BaseModel):
    - LINE Webhook URL設定
 
 2. **動作確認**
-   - ヘルスチェック: `curl http://localhost:8000/health`
+   - ヘルスチェック: `curl http://localhost:8000/api/ohayo-kazuko/v1/health`
    - LINE Botの動作確認
    - スケジューラーの動作確認
 
@@ -1147,7 +1147,7 @@ class DepartureRecord(BaseModel):
 
 4. **LINE Webhook URLの設定**
    - LINE Developers ConsoleでWebhook URLを設定
-   - Webhook URL: `https://your-domain.com/webhook/line`
+   - Webhook URL: `https://your-domain.com/api/ohayo-kazuko/v1/webhook/line`
 
 ---
 
@@ -1185,7 +1185,7 @@ class DepartureRecord(BaseModel):
    - LINE Webhook URL設定
 
 2. **動作確認**
-   - ヘルスチェック: `curl http://localhost:8000/health`
+   - ヘルスチェック: `curl http://localhost:8000/api/ohayo-kazuko/v1/health`
    - LINE Botの動作確認
    - スケジューラーの動作確認
 

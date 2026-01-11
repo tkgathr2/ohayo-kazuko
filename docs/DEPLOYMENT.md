@@ -140,7 +140,7 @@ WantedBy=multi-user.target
 ### 1. ヘルスチェック
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8000/api/ohayo-kazuko/v1/health
 ```
 
 期待されるレスポンス：
@@ -152,7 +152,7 @@ curl http://localhost:8000/health
 
 LINE Developersコンソールで、Webhook URLを設定：
 ```
-https://your-domain.com/webhook/line
+https://your-domain.com/api/ohayo-kazuko/v1/webhook/line
 ```
 
 ### 3. テストメッセージの送信

@@ -113,10 +113,10 @@ cp .env.example .env
 
 #### 3. LINE Webhook URLの設定
 - LINE Developers ConsoleでWebhook URLを設定
-- Webhook URL: `https://your-domain.com/webhook/line`
+- Webhook URL: `https://your-domain.com/api/ohayo-kazuko/v1/webhook/line`
 
 #### 4. 動作確認
-- ヘルスチェック: `curl http://localhost:8000/health`
+- ヘルスチェック: `curl http://localhost:8000/api/ohayo-kazuko/v1/health`
 - LINE Botの動作確認
 - スケジューラーの動作確認
 
@@ -280,10 +280,10 @@ cp .env.example .env
 
 #### 3. LINE Webhook URLの設定
 - LINE Developers ConsoleでWebhook URLを設定
-- Webhook URL: `https://your-domain.com/webhook/line`
+- Webhook URL: `https://your-domain.com/api/ohayo-kazuko/v1/webhook/line`
 
 #### 4. 動作確認
-- ヘルスチェック: `curl http://localhost:8000/health`
+- ヘルスチェック: `curl http://localhost:8000/api/ohayo-kazuko/v1/health`
 - LINE Botの動作確認
 - スケジューラーの動作確認
 
@@ -447,10 +447,10 @@ cp .env.example .env
 
 #### 3. LINE Webhook URLの設定
 - LINE Developers ConsoleでWebhook URLを設定
-- Webhook URL: `https://your-domain.com/webhook/line`
+- Webhook URL: `https://your-domain.com/api/ohayo-kazuko/v1/webhook/line`
 
 #### 4. 動作確認
-- ヘルスチェック: `curl http://localhost:8000/health`
+- ヘルスチェック: `curl http://localhost:8000/api/ohayo-kazuko/v1/health`
 - LINE Botの動作確認
 - スケジューラーの動作確認
 

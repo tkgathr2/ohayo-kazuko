@@ -116,7 +116,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 ### 4. ヘルスチェック
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8000/api/ohayo-kazuko/v1/health
 ```
 
 期待されるレスポンス:
@@ -128,7 +128,7 @@ curl http://localhost:8000/health
 
 LINE Developers Consoleで、Webhook URLを設定:
 ```
-https://your-domain.com/webhook/line
+https://your-domain.com/api/ohayo-kazuko/v1/webhook/line
 ```
 
 ---
@@ -306,7 +306,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 ### 4. ヘルスチェック
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8000/api/ohayo-kazuko/v1/health
 ```
 
 期待されるレスポンス:
@@ -318,7 +318,7 @@ curl http://localhost:8000/health
 
 LINE Developers Consoleで、Webhook URLを設定:
 ```
-https://your-domain.com/webhook/line
+https://your-domain.com/api/ohayo-kazuko/v1/webhook/line
 ```
 
 ---
@@ -496,7 +496,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 ### 4. ヘルスチェック
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8000/api/ohayo-kazuko/v1/health
 ```
 
 期待されるレスポンス:
@@ -508,7 +508,7 @@ curl http://localhost:8000/health
 
 LINE Developers Consoleで、Webhook URLを設定:
 ```
-https://your-domain.com/webhook/line
+https://your-domain.com/api/ohayo-kazuko/v1/webhook/line
 ```
 
 ---
