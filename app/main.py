@@ -1,9 +1,15 @@
 """FastAPIアプリケーション エントリーポイント"""
 from datetime import datetime
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from dotenv import load_dotenv
 from fastapi import FastAPI
+
+# .envファイルをロード
+project_root = Path(__file__).parent.parent
+load_dotenv(project_root / ".env")
 
 from app.config import ensure_required_env, get_settings
 from app.handlers import webhook_router
