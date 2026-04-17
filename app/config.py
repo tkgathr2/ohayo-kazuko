@@ -1,8 +1,9 @@
 """設定管理"""
 import os
+import re
 from typing import List, Optional
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -64,8 +65,8 @@ class Settings(BaseSettings):
     @field_validator("twilio_account_sid")
     @classmethod
     def validate_twilio_account_sid(cls, value: str) -> str:
-        if not value.startswith("AC") or len(value) != 34:
-            raise ValueError("TWILIO_ACCOUNT_SID must match ^AC[a-z0-9]{32}$")
+        if not re.match(r"^AC[a-zA-Z0-9]{32}$", value):
+            raise ValueError("TWILIO_ACCOUNT_SID must match ^AC[a-zA-Z0-9]{32}$")
         return value
 
     @field_validator("twilio_phone_number")
@@ -74,6 +75,17 @@ class Settings(BaseSettings):
         if not value.startswith("+"):
             raise ValueError("TWILIO_PHONE_NUMBER must be E.164 format")
         return value
+
+    @model_validator(mode="after")
+    def validate_google_drive_consistency(self) -> "Settings":
+        """enable_procast=Trueの場合、Google Drive設定が両方揃っているかチェック"""
+        if self.enable_procast:
+            if bool(self.google_drive_credentials_json) != bool(self.google_drive_procast_folder_id):
+                raise ValueError(
+                    "GOOGLE_DRIVE_CREDENTIALS_JSON and GOOGLE_DRIVE_PROCAST_FOLDER_ID "
+                    "must both be set when ENABLE_PROCAST=true"
+                )
+        return self
 
 
 _settings: Optional[Settings] = None

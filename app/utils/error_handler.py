@@ -102,7 +102,9 @@ async def retry_async(
             )
 
             if on_retry:
-                on_retry(attempt, exc)
+                result = on_retry(attempt, exc)
+                if asyncio.iscoroutine(result):
+                    await result
 
             await asyncio.sleep(backoff)
 

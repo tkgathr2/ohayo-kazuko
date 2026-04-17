@@ -61,7 +61,10 @@ def create_app() -> FastAPI:
 
     @app.on_event("shutdown")
     async def shutdown_event() -> None:
-        scheduler.shutdown(wait=False)
+        try:
+            scheduler.shutdown(wait=True)
+        except Exception:
+            pass
         await line_service.close()
         await twilio_service.close()
 

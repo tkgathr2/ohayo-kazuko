@@ -22,16 +22,16 @@ class TwilioService:
 
         async def send() -> httpx.Response:
             resp = await self._client.post(url, data=data, auth=auth)
-            if resp.status_code in (20429, 500, 502, 503, 504):
+            if resp.status_code in (429, 500, 502, 503, 504):
                 raise httpx.HTTPStatusError("retryable", request=resp.request, response=resp)
             return resp
 
         try:
             resp = await retry_async(
                 send,
-                retryable_exceptions=[httpx.HTTPStatusError, httpx.TimeoutException],
+                retryable_exceptions=[httpx.HTTPStatusError, httpx.TimeoutException, httpx.ConnectError],
                 retries=3,
-                backoff=1.0,
+                initial_backoff=1.0,
             )
         except Exception as exc:
             self._logger.error("Twilio call failed: %s", exc)
@@ -49,16 +49,16 @@ class TwilioService:
 
         async def send() -> httpx.Response:
             resp = await self._client.post(url, data={"Status": "canceled"}, auth=auth)
-            if resp.status_code in (20429, 500, 502, 503, 504):
+            if resp.status_code in (429, 500, 502, 503, 504):
                 raise httpx.HTTPStatusError("retryable", request=resp.request, response=resp)
             return resp
 
         try:
             resp = await retry_async(
                 send,
-                retryable_exceptions=[httpx.HTTPStatusError, httpx.TimeoutException],
+                retryable_exceptions=[httpx.HTTPStatusError, httpx.TimeoutException, httpx.ConnectError],
                 retries=3,
-                backoff=1.0,
+                initial_backoff=1.0,
             )
         except Exception as exc:
             self._logger.error("Twilio cancel failed: %s", exc)

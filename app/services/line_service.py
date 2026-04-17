@@ -58,7 +58,7 @@ class LineService:
         try:
             return await retry_async(
                 send,
-                retryable_exceptions=[httpx.HTTPStatusError, httpx.TimeoutException],
+                retryable_exceptions=[httpx.HTTPStatusError, httpx.TimeoutException, httpx.ConnectError],
                 retries=5,
                 initial_backoff=1.0,
             )

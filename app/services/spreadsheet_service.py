@@ -83,8 +83,8 @@ class SpreadsheetService:
                 # 通常出発予定時間
                 default_departure = None
                 if data.get("通常出発予定時間"):
-                    hour, minute = data["通常出発予定時間"].split(":")
-                    default_departure = time(int(hour), int(minute))
+                    parts = data["通常出発予定時間"].split(":")
+                    default_departure = time(int(parts[0]), int(parts[1]))
 
                 # 起床予定時間登録ON/OFF
                 wakeup_enabled = data.get("起床予定時間登録ON/OFF", "").upper() == "TRUE"
@@ -92,8 +92,8 @@ class SpreadsheetService:
                 # 通常起床予定時間
                 default_wakeup = None
                 if data.get("通常起床予定時間"):
-                    hour, minute = data["通常起床予定時間"].split(":")
-                    default_wakeup = time(int(hour), int(minute))
+                    parts = data["通常起床予定時間"].split(":")
+                    default_wakeup = time(int(parts[0]), int(parts[1]))
 
                 # 起床オフセット
                 wakeup_offset = int(data.get("起床オフセット（分）", 0) or 0)
@@ -181,10 +181,10 @@ class SpreadsheetService:
         found = self.get_departure_record(target_date, record.line_id)
         if found:
             row_index, _ = found
-            range_name = f"{DEPARTURE_SHEET}!A{row_index}:M{row_index}"
+            range_name = f"{DEPARTURE_SHEET}!A{row_index}:L{row_index}"
             self._update_values(range_name, [self._record_to_row(record)])
             return
-        self._append_values(f"{DEPARTURE_SHEET}!A:M", [self._record_to_row(record)])
+        self._append_values(f"{DEPARTURE_SHEET}!A:L", [self._record_to_row(record)])
 
     def update_departure_actual_time(
         self, target_date: date, line_id: str, actual_time: datetime
@@ -272,11 +272,14 @@ class SpreadsheetService:
 
             _, record = found
 
+            # 出発予定時間と起床予定時間を一度に更新（無駄なAPI呼び出しを避ける）
+            updated = False
+
             # 出発予定時間の自動設定
             if record.scheduled_departure_time is None:
                 if cast.default_departure_time:
                     record.scheduled_departure_time = cast.default_departure_time
-                    self.upsert_departure_record(record)
+                    updated = True
                 else:
                     missing_departure.append(cast.name)
 
@@ -284,9 +287,12 @@ class SpreadsheetService:
             if cast.wakeup_time_registration_enabled and record.scheduled_wakeup_time is None:
                 if cast.default_wakeup_time:
                     record.scheduled_wakeup_time = cast.default_wakeup_time
-                    self.upsert_departure_record(record)
+                    updated = True
                 else:
                     missing_wakeup.append(cast.name)
+
+            if updated:
+                self.upsert_departure_record(record)
 
         return missing_departure, missing_wakeup
 
@@ -296,8 +302,8 @@ class SpreadsheetService:
             # 出発予定時間
             scheduled_departure = None
             if data.get("出発予定時間"):
-                hour, minute = data["出発予定時間"].split(":")
-                scheduled_departure = time(int(hour), int(minute))
+                parts = data["出発予定時間"].split(":")
+                scheduled_departure = time(int(parts[0]), int(parts[1]))
 
             # 出発報告時刻
             actual_departure = None
@@ -314,8 +320,8 @@ class SpreadsheetService:
             # 起床予定時間
             scheduled_wakeup = None
             if data.get("起床予定時間"):
-                hour, minute = data["起床予定時間"].split(":")
-                scheduled_wakeup = time(int(hour), int(minute))
+                parts = data["起床予定時間"].split(":")
+                scheduled_wakeup = time(int(parts[0]), int(parts[1]))
 
             # 起床報告時刻
             actual_wakeup = None

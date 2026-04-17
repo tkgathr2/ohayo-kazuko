@@ -22,7 +22,7 @@ def start_scheduler(
 ) -> None:
     """スケジューラーを開始"""
     logger = get_logger("job_scheduler")
-    tz = ZoneInfo("Asia/Tokyo")
+    tz = ZoneInfo(settings.tz)
 
     # リマインドジョブ
     # enable_multiple_remindersがFalseの場合は20:00のみ、Trueの場合は18:00, 19:00, 20:00, 21:00, 22:00

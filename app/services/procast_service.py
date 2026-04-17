@@ -125,9 +125,10 @@ class ProcastService:
             パースしたデータ
         """
         try:
-            if file_name.endswith(".csv"):
+            file_name_lower = file_name.lower()
+            if file_name_lower.endswith(".csv"):
                 return self._parse_csv(content)
-            elif file_name.endswith(".json"):
+            elif file_name_lower.endswith(".json"):
                 return self._parse_json(content)
             else:
                 self._logger.warning("Unsupported file format: %s", file_name)
@@ -147,10 +148,18 @@ class ProcastService:
             "working_casts": self._extract_working_casts(rows),
         }
 
-    def _parse_json(self, content: io.BytesIO) -> Dict[str, Any]:
+    def _parse_json(self, content: io.BytesIO) -> Optional[Dict[str, Any]]:
         """JSONファイルをパース"""
-        text = content.read().decode("utf-8")
-        data = json.loads(text)
+        try:
+            text = content.read().decode("utf-8-sig")
+        except UnicodeDecodeError as exc:
+            self._logger.error("Failed to decode JSON file: %s", exc)
+            return None
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError as exc:
+            self._logger.error("Failed to parse JSON content: %s", exc)
+            return None
         if isinstance(data, list):
             return {
                 "format": "json",
@@ -167,6 +176,8 @@ class ProcastService:
             ファイル形式が確定していないため、複数のカラム名をサポート
         """
         working = set()
+        if not rows:
+            return working
         tomorrow = (datetime.now(self._tz) + timedelta(days=1)).date()
 
         for row in rows:
