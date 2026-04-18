@@ -23,16 +23,22 @@ class SpreadsheetService:
         self._settings = settings
         self._logger = get_logger("spreadsheet_service")
         self._tz = ZoneInfo(settings.tz)
-        creds_info = json.loads(settings.google_sheets_credentials_json)
-        creds = Credentials.from_service_account_info(
-            creds_info, scopes=["https://www.googleapis.com/auth/spreadsheets"]
-        )
-        self._service = build("sheets", "v4", credentials=creds, cache_discovery=False)
+        self._service = None  # lazy init: initialized on first use
+
+    def _get_service(self):
+        """Google Sheets APIサービスを遅延初期化して返す"""
+        if self._service is None:
+            creds_info = json.loads(self._settings.google_sheets_credentials_json)
+            creds = Credentials.from_service_account_info(
+                creds_info, scopes=["https://www.googleapis.com/auth/spreadsheets"]
+            )
+            self._service = build("sheets", "v4", credentials=creds, cache_discovery=False)
+        return self._service
 
     def _get_values(self, sheet_name: str) -> List[List[str]]:
         """シートの値を取得"""
         result = (
-            self._service.spreadsheets()
+            self._get_service().spreadsheets()
             .values()
             .get(spreadsheetId=self._settings.google_sheets_spreadsheet_id, range=sheet_name)
             .execute()
@@ -43,7 +49,7 @@ class SpreadsheetService:
         """シートの値を更新"""
         body = {"values": values}
         (
-            self._service.spreadsheets()
+            self._get_service().spreadsheets()
             .values()
             .update(
                 spreadsheetId=self._settings.google_sheets_spreadsheet_id,
@@ -58,7 +64,7 @@ class SpreadsheetService:
         """シートに値を追加"""
         body = {"values": values}
         (
-            self._service.spreadsheets()
+            self._get_service().spreadsheets()
             .values()
             .append(
                 spreadsheetId=self._settings.google_sheets_spreadsheet_id,

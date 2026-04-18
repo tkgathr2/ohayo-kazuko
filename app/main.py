@@ -21,7 +21,11 @@ from app.utils.logger import configure_logging
 
 def create_app() -> FastAPI:
     """アプリケーションを作成"""
-    ensure_required_env()
+    try:
+        ensure_required_env()
+    except RuntimeError as e:
+        import logging
+        logging.warning("Some required env vars are missing: %s", e)
     settings = get_settings()
     configure_logging(settings.log_level, settings.log_file)
 
