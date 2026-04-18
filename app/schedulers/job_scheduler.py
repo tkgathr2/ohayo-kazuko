@@ -105,8 +105,11 @@ def start_scheduler(
     scheduler.start()
     logger.info("Scheduler started")
 
-    # 起動時に既存の電話をスケジュール
-    _schedule_existing_calls(phone_service, sheet_service, tz, settings)
+    # 起動時に既存の電話をスケジュール（スプレッドシート接続失敗時はスキップ）
+    try:
+        _schedule_existing_calls(phone_service, sheet_service, tz, settings)
+    except Exception as exc:
+        logger.warning("Could not schedule existing calls at startup (sheet unavailable): %s", exc)
 
 
 def _tomorrow_date(tz: ZoneInfo):
