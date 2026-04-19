@@ -28,7 +28,10 @@ class SpreadsheetService:
     def _get_service(self):
         """Google Sheets APIサービスを遅延初期化して返す"""
         if self._service is None:
-            creds_info = json.loads(self._settings.google_sheets_credentials_json)
+            try:
+                creds_info = json.loads(self._settings.google_sheets_credentials_json)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"GOOGLE_SHEETS_CREDENTIALS_JSON のJSONパースに失敗しました: {e}") from e
             creds = Credentials.from_service_account_info(
                 creds_info, scopes=["https://www.googleapis.com/auth/spreadsheets"]
             )
@@ -90,7 +93,8 @@ class SpreadsheetService:
                 default_departure = None
                 if data.get("通常出発予定時間"):
                     parts = data["通常出発予定時間"].split(":")
-                    default_departure = time(int(parts[0]), int(parts[1]))
+                    if len(parts) >= 2:
+                        default_departure = time(int(parts[0]), int(parts[1]))
 
                 # 起床予定時間登録ON/OFF
                 wakeup_enabled = data.get("起床予定時間登録ON/OFF", "").upper() == "TRUE"
@@ -99,7 +103,8 @@ class SpreadsheetService:
                 default_wakeup = None
                 if data.get("通常起床予定時間"):
                     parts = data["通常起床予定時間"].split(":")
-                    default_wakeup = time(int(parts[0]), int(parts[1]))
+                    if len(parts) >= 2:
+                        default_wakeup = time(int(parts[0]), int(parts[1]))
 
                 # 起床オフセット
                 wakeup_offset = int(data.get("起床オフセット（分）", 0) or 0)
@@ -309,7 +314,8 @@ class SpreadsheetService:
             scheduled_departure = None
             if data.get("出発予定時間"):
                 parts = data["出発予定時間"].split(":")
-                scheduled_departure = time(int(parts[0]), int(parts[1]))
+                if len(parts) >= 2:
+                    scheduled_departure = time(int(parts[0]), int(parts[1]))
 
             # 出発報告時刻
             actual_departure = None
@@ -327,7 +333,8 @@ class SpreadsheetService:
             scheduled_wakeup = None
             if data.get("起床予定時間"):
                 parts = data["起床予定時間"].split(":")
-                scheduled_wakeup = time(int(parts[0]), int(parts[1]))
+                if len(parts) >= 2:
+                    scheduled_wakeup = time(int(parts[0]), int(parts[1]))
 
             # 起床報告時刻
             actual_wakeup = None
@@ -353,11 +360,11 @@ class SpreadsheetService:
                 scheduled_departure_time=scheduled_departure,
                 actual_departure_time=actual_departure,
                 departure_status=departure_status,
-                departure_phone_call_count=int(data.get("出発電話発信回数", 0) or 0),
+                departure_phone_call_count=int(data.get("出発電話発信回数") or 0),
                 scheduled_wakeup_time=scheduled_wakeup,
                 actual_wakeup_time=actual_wakeup,
                 wakeup_status=wakeup_status,
-                wakeup_phone_call_count=int(data.get("起床電話発信回数", 0) or 0),
+                wakeup_phone_call_count=int(data.get("起床電話発信回数") or 0),
                 final_result=final_result,
             )
             return record

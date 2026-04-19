@@ -34,7 +34,10 @@ async def line_webhook(request: Request):
     if not line_service.verify_signature(body, signature):
         raise HTTPException(status_code=400, detail="Invalid signature")
 
-    payload = await request.json()
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
     events = payload.get("events", [])
     tz = ZoneInfo("Asia/Tokyo")
     logger = get_logger("webhook_handler")

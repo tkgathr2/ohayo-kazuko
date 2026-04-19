@@ -195,7 +195,8 @@ class ProcastService:
                         parsed_date = work_date
                     if parsed_date == tomorrow:
                         if str(is_working).upper() in ("TRUE", "1", "あり", "○", "YES"):
-                            working.add(name)
+                            if name:  # 空文字列名はスキップ
+                                working.add(name)
                 except ValueError:
                     pass
 

@@ -76,7 +76,7 @@ class NotificationService:
         Returns:
             送信成功時True
         """
-        if not self._settings.control_line_id:
+        if not self._settings.control_line_ids:
             self._logger.warning("CONTROL_LINE_ID not set; skipping control notification")
             return False
 
@@ -148,7 +148,7 @@ class NotificationService:
         Returns:
             送信成功時True
         """
-        if not self._settings.control_line_id:
+        if not self._settings.control_line_ids:
             self._logger.warning("CONTROL_LINE_ID not set; skipping emergency alert")
             return False
 
@@ -195,7 +195,7 @@ class NotificationService:
         Returns:
             送信成功時True
         """
-        if not self._settings.control_line_id:
+        if not self._settings.control_line_ids:
             self._logger.warning("CONTROL_LINE_ID not set; skipping control notification")
             return False
 

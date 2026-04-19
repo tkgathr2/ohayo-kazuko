@@ -1,5 +1,5 @@
 """スケジューラー設定（起床リマインド、Procast通知対応）"""
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -220,7 +220,7 @@ def _schedule_existing_calls(
 def _schedule_calls_for_date(
     phone_service: PhoneService,
     sheet_service: SpreadsheetService,
-    target_date,
+    target_date: date,
     tz: ZoneInfo,
     settings: Settings,
 ) -> None:
