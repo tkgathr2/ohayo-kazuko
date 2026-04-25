@@ -139,6 +139,8 @@ async def _handle_departure_report(
     status = judge_departure(record.scheduled_departure_time, actual_time, tz)
     record.actual_departure_time = actual_time
     record.departure_status = status
+    # 管制アラート後に報告された場合もfinal_resultをリセット（矛盾状態の解消）
+    record.final_result = None
     sheet_service.upsert_departure_record(record)
 
     # 電話をキャンセル
@@ -180,6 +182,8 @@ async def _handle_wakeup_report(
     status = judge_wakeup(record.scheduled_wakeup_time, actual_time, tz)
     record.actual_wakeup_time = actual_time
     record.wakeup_status = status
+    # 管制アラート後に報告された場合もfinal_resultをリセット（矛盾状態の解消）
+    record.final_result = None
     sheet_service.upsert_departure_record(record)
 
     # 電話をキャンセル
