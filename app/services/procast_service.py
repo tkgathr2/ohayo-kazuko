@@ -70,9 +70,9 @@ class ProcastService:
 
         try:
             # フォルダ内のファイルを検索
-            # Google Drive APIクエリ用にシングルクォートをエスケープ
+            # Google Drive APIクエリ用にシングルクォートをエスケープ（仕様: '' で表現）
             file_name = self._settings.google_drive_procast_file_name
-            escaped_file_name = file_name.replace("\\", "\\\\").replace("'", "\\'")
+            escaped_file_name = file_name.replace("'", "''")
             folder_id = self._settings.google_drive_procast_folder_id
             query = (
                 f"'{folder_id}' in parents "

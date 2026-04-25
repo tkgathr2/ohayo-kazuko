@@ -200,9 +200,8 @@ class PhoneService:
         self._departure_jobs_by_line.pop(line_id, None)
 
         # 進行中のTwilio電話をキャンセル（fire-and-forget）
-        import asyncio
         for sid in self._departure_call_sids_by_line.pop(line_id, []):
-            asyncio.create_task(self._cancel_twilio_call(sid))
+            self._schedule_twilio_cancel(sid)
 
     def cancel_wakeup_calls(self, line_id: str) -> None:
         """起床電話をキャンセル（スケジューラーから削除＋進行中のTwilio電話もキャンセル）"""
@@ -215,9 +214,18 @@ class PhoneService:
         self._wakeup_jobs_by_line.pop(line_id, None)
 
         # 進行中のTwilio電話をキャンセル（fire-and-forget）
-        import asyncio
         for sid in self._wakeup_call_sids_by_line.pop(line_id, []):
-            asyncio.create_task(self._cancel_twilio_call(sid))
+            self._schedule_twilio_cancel(sid)
+
+    def _schedule_twilio_cancel(self, call_sid: str) -> None:
+        """イベントループが実行中の場合にTwilioキャンセルをスケジュール"""
+        import asyncio
+        try:
+            loop = asyncio.get_running_loop()
+            loop.create_task(self._cancel_twilio_call(call_sid))
+        except RuntimeError:
+            # イベントループが取得できない場合（起動時スケジュールなど）はスキップ
+            self._logger.warning("No running event loop for Twilio cancel, sid=%s", call_sid)
 
     async def _cancel_twilio_call(self, call_sid: str) -> None:
         """Twilio APIを使って進行中の電話をキャンセル"""
