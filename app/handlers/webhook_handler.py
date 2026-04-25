@@ -152,7 +152,7 @@ async def _handle_wakeup_report(
 ):
     """起床報告を処理"""
     event_ts = event.get("timestamp")
-    actual_time = datetime.fromtimestamp(event_ts / 1000, tz=tz) if event_ts else datetime.now(tz)
+    actual_time = datetime.fromtimestamp(event_ts / 1000, tz=tz) if event_ts is not None else datetime.now(tz)
     today = actual_time.date()
 
     found = sheet_service.get_departure_record(today, line_id)

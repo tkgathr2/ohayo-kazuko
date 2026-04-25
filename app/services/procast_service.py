@@ -26,11 +26,18 @@ class ProcastService:
 
         # Google Drive API初期化
         if settings.google_drive_credentials_json:
-            creds_info = json.loads(settings.google_drive_credentials_json)
-            creds = Credentials.from_service_account_info(
-                creds_info, scopes=["https://www.googleapis.com/auth/drive.readonly"]
-            )
-            self._drive_service = build("drive", "v3", credentials=creds, cache_discovery=False)
+            try:
+                creds_info = json.loads(settings.google_drive_credentials_json)
+                creds = Credentials.from_service_account_info(
+                    creds_info, scopes=["https://www.googleapis.com/auth/drive.readonly"]
+                )
+                self._drive_service = build("drive", "v3", credentials=creds, cache_discovery=False)
+            except json.JSONDecodeError as e:
+                self._logger.error("GOOGLE_DRIVE_CREDENTIALS_JSON のJSONパースに失敗: %s", e)
+                self._drive_service = None
+            except Exception as e:
+                self._logger.error("Google Drive APIの初期化に失敗: %s", e)
+                self._drive_service = None
         else:
             self._drive_service = None
 
@@ -63,10 +70,13 @@ class ProcastService:
 
         try:
             # フォルダ内のファイルを検索
+            # Google Drive APIクエリ用にシングルクォートをエスケープ
             file_name = self._settings.google_drive_procast_file_name
+            escaped_file_name = file_name.replace("\\", "\\\\").replace("'", "\\'")
+            folder_id = self._settings.google_drive_procast_folder_id
             query = (
-                f"'{self._settings.google_drive_procast_folder_id}' in parents "
-                f"and name = '{file_name}' "
+                f"'{folder_id}' in parents "
+                f"and name = '{escaped_file_name}' "
                 f"and trashed = false"
             )
 

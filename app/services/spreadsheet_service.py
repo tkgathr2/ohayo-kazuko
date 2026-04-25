@@ -16,6 +16,16 @@ CAST_SHEET = "キャスト一覧"
 DEPARTURE_SHEET = "出発予定時間_当日管理"
 
 
+def _col_index_to_letter(idx: int) -> str:
+    """0始まりの列インデックスをGoogle Sheets列アルファベット表記に変換（A, B, ..., Z, AA, AB, ...）"""
+    result = ""
+    n = idx + 1  # 1始まりに変換
+    while n > 0:
+        n, remainder = divmod(n - 1, 26)
+        result = chr(ord("A") + remainder) + result
+    return result
+
+
 class SpreadsheetService:
     """Google Sheets サービス"""
 
@@ -147,8 +157,8 @@ class SpreadsheetService:
         for idx, row in enumerate(rows[1:], start=2):
             data = dict(zip(header, row + [""] * (len(header) - len(row))))
             if data.get("LINE_ID") == line_id:
-                # 列番号をアルファベットに変換
-                col_letter = chr(ord("A") + wakeup_col_idx)
+                # 列番号をアルファベットに変換（26列以上もサポート）
+                col_letter = _col_index_to_letter(wakeup_col_idx)
                 range_name = f"{CAST_SHEET}!{col_letter}{idx}"
                 self._update_values(range_name, [["TRUE" if enabled else "FALSE"]])
                 return True

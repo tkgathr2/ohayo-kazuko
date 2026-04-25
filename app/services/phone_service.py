@@ -37,6 +37,9 @@ class PhoneService:
         self._departure_jobs_by_line: Dict[str, List[str]] = {}
         # 起床電話のジョブID
         self._wakeup_jobs_by_line: Dict[str, List[str]] = {}
+        # 発信済みコールSID（進行中の電話をキャンセルするために保存）
+        self._departure_call_sids_by_line: Dict[str, List[str]] = {}
+        self._wakeup_call_sids_by_line: Dict[str, List[str]] = {}
 
     def schedule_departure_calls(self, record: DepartureRecord, tz: ZoneInfo, settings: Settings) -> None:
         """
@@ -56,10 +59,11 @@ class PhoneService:
         # 電話②: 電話①から10分後（=予定時間から15分後）
         call2_time = scheduled_dt + timedelta(minutes=15)
 
+        date_str = target_date.isoformat()
         job_ids = []
 
         # 電話①
-        job_id1 = f"departure_call1_{record.line_id}"
+        job_id1 = f"departure_call1_{date_str}_{record.line_id}"
         self._scheduler.add_job(
             self._make_departure_call,
             "date",
@@ -72,7 +76,7 @@ class PhoneService:
 
         # 電話②（enable_phone_call2有効時のみ）
         if settings.enable_phone_call2:
-            job_id2 = f"departure_call2_{record.line_id}"
+            job_id2 = f"departure_call2_{date_str}_{record.line_id}"
             self._scheduler.add_job(
                 self._make_departure_call,
                 "date",
@@ -83,24 +87,26 @@ class PhoneService:
             )
             job_ids.append(job_id2)
 
-            # 最終確認（電話②から30秒後）
-            final_job_id = f"departure_final_{record.line_id}"
+            # 最終確認（電話②から5分後）
+            # （電話接続+TTS再生+LINE操作に要する時間を考慮して30秒→5分に延長）
+            final_job_id = f"departure_final_{date_str}_{record.line_id}"
             self._scheduler.add_job(
                 self._departure_final_check,
                 "date",
-                run_date=call2_time + timedelta(seconds=30),
+                run_date=call2_time + timedelta(minutes=5),
                 args=[target_date, record.line_id, tz],
                 id=final_job_id,
                 replace_existing=True,
             )
             job_ids.append(final_job_id)
         else:
-            # 電話②が無効の場合、電話①から30秒後に最終確認
-            final_job_id = f"departure_final_{record.line_id}"
+            # 電話②が無効の場合、電話①から5分後に最終確認
+            # （電話接続+TTS再生+LINE操作に要する時間を考慮して30秒→5分に延長）
+            final_job_id = f"departure_final_{date_str}_{record.line_id}"
             self._scheduler.add_job(
                 self._departure_final_check,
                 "date",
-                run_date=call1_time + timedelta(seconds=30),
+                run_date=call1_time + timedelta(minutes=5),
                 args=[target_date, record.line_id, tz],
                 id=final_job_id,
                 replace_existing=True,
@@ -127,10 +133,11 @@ class PhoneService:
         # 電話②: 電話①から10分後（=予定時間から15分後）
         call2_time = scheduled_dt + timedelta(minutes=15)
 
+        date_str = target_date.isoformat()
         job_ids = []
 
         # 電話①
-        job_id1 = f"wakeup_call1_{record.line_id}"
+        job_id1 = f"wakeup_call1_{date_str}_{record.line_id}"
         self._scheduler.add_job(
             self._make_wakeup_call,
             "date",
@@ -143,7 +150,7 @@ class PhoneService:
 
         # 電話②（enable_phone_call2有効時のみ）
         if settings.enable_phone_call2:
-            job_id2 = f"wakeup_call2_{record.line_id}"
+            job_id2 = f"wakeup_call2_{date_str}_{record.line_id}"
             self._scheduler.add_job(
                 self._make_wakeup_call,
                 "date",
@@ -154,24 +161,26 @@ class PhoneService:
             )
             job_ids.append(job_id2)
 
-            # 最終確認（電話②から30秒後）
-            final_job_id = f"wakeup_final_{record.line_id}"
+            # 最終確認（電話②から5分後）
+            # （電話接続+TTS再生+LINE操作に要する時間を考慮して30秒→5分に延長）
+            final_job_id = f"wakeup_final_{date_str}_{record.line_id}"
             self._scheduler.add_job(
                 self._wakeup_final_check,
                 "date",
-                run_date=call2_time + timedelta(seconds=30),
+                run_date=call2_time + timedelta(minutes=5),
                 args=[target_date, record.line_id, tz],
                 id=final_job_id,
                 replace_existing=True,
             )
             job_ids.append(final_job_id)
         else:
-            # 電話②が無効の場合、電話①から30秒後に最終確認
-            final_job_id = f"wakeup_final_{record.line_id}"
+            # 電話②が無効の場合、電話①から5分後に最終確認
+            # （電話接続+TTS再生+LINE操作に要する時間を考慮して30秒→5分に延長）
+            final_job_id = f"wakeup_final_{date_str}_{record.line_id}"
             self._scheduler.add_job(
                 self._wakeup_final_check,
                 "date",
-                run_date=call1_time + timedelta(seconds=30),
+                run_date=call1_time + timedelta(minutes=5),
                 args=[target_date, record.line_id, tz],
                 id=final_job_id,
                 replace_existing=True,
@@ -181,7 +190,8 @@ class PhoneService:
         self._wakeup_jobs_by_line[record.line_id] = job_ids
 
     def cancel_departure_calls(self, line_id: str) -> None:
-        """出発電話をキャンセル"""
+        """出発電話をキャンセル（スケジューラーから削除＋進行中のTwilio電話もキャンセル）"""
+        # APSchedulerジョブをキャンセル
         for job_id in self._departure_jobs_by_line.get(line_id, []):
             try:
                 self._scheduler.remove_job(job_id)
@@ -189,14 +199,34 @@ class PhoneService:
                 pass
         self._departure_jobs_by_line.pop(line_id, None)
 
+        # 進行中のTwilio電話をキャンセル（fire-and-forget）
+        import asyncio
+        for sid in self._departure_call_sids_by_line.pop(line_id, []):
+            asyncio.create_task(self._cancel_twilio_call(sid))
+
     def cancel_wakeup_calls(self, line_id: str) -> None:
-        """起床電話をキャンセル"""
+        """起床電話をキャンセル（スケジューラーから削除＋進行中のTwilio電話もキャンセル）"""
+        # APSchedulerジョブをキャンセル
         for job_id in self._wakeup_jobs_by_line.get(line_id, []):
             try:
                 self._scheduler.remove_job(job_id)
             except Exception:
                 pass
         self._wakeup_jobs_by_line.pop(line_id, None)
+
+        # 進行中のTwilio電話をキャンセル（fire-and-forget）
+        import asyncio
+        for sid in self._wakeup_call_sids_by_line.pop(line_id, []):
+            asyncio.create_task(self._cancel_twilio_call(sid))
+
+    async def _cancel_twilio_call(self, call_sid: str) -> None:
+        """Twilio APIを使って進行中の電話をキャンセル"""
+        try:
+            ok = await self._twilio.cancel_call(call_sid)
+            if not ok:
+                self._logger.warning("Twilio cancel_call failed for sid=%s", call_sid)
+        except Exception as exc:
+            self._logger.error("Error cancelling Twilio call sid=%s: %s", call_sid, exc)
 
     async def _make_departure_call(
         self, record_date: date, line_id: str, call_number: int, tz: ZoneInfo
@@ -232,6 +262,11 @@ class PhoneService:
         call_sid = await self._twilio.make_call(phone_number, DEPARTURE_CALL_MESSAGE)
         if not call_sid:
             self._logger.error("Failed to make departure call for line_id=%s", line_id)
+        else:
+            # 進行中の電話をキャンセルできるようSIDを保存
+            if line_id not in self._departure_call_sids_by_line:
+                self._departure_call_sids_by_line[line_id] = []
+            self._departure_call_sids_by_line[line_id].append(call_sid)
 
     async def _make_wakeup_call(
         self, record_date: date, line_id: str, call_number: int, tz: ZoneInfo
@@ -267,6 +302,11 @@ class PhoneService:
         call_sid = await self._twilio.make_call(phone_number, WAKEUP_CALL_MESSAGE)
         if not call_sid:
             self._logger.error("Failed to make wakeup call for line_id=%s", line_id)
+        else:
+            # 進行中の電話をキャンセルできるようSIDを保存
+            if line_id not in self._wakeup_call_sids_by_line:
+                self._wakeup_call_sids_by_line[line_id] = []
+            self._wakeup_call_sids_by_line[line_id].append(call_sid)
 
     async def _departure_final_check(
         self, record_date: date, line_id: str, tz: ZoneInfo

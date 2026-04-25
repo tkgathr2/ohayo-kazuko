@@ -84,10 +84,12 @@ class NotificationService:
         departure_unregistered = self._get_unregistered_casts(
             target_date, working_casts, "departure"
         )
-        # 起床予定時間未登録者
-        wakeup_unregistered = self._get_unregistered_casts(
-            target_date, working_casts, "wakeup"
-        )
+        # 起床予定時間未登録者（enable_wakeup_watch有効時のみ）
+        wakeup_unregistered = []
+        if self._settings.enable_wakeup_watch:
+            wakeup_unregistered = self._get_unregistered_casts(
+                target_date, working_casts, "wakeup"
+            )
 
         messages = []
 
@@ -252,7 +254,7 @@ class NotificationService:
         # 通知先を決定
         recipients = []
 
-        if self._settings.control_line_id:
+        if self._settings.control_line_ids:
             recipients.extend(self._settings.control_line_ids)
 
         # 20:00以降は髙木にも通知

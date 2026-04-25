@@ -147,9 +147,9 @@ def test_mvp_phone_service_no_call2(mvp_settings: Settings) -> None:
 
     # enable_phone_call2=Falseの場合、電話①と最終確認のみ（電話②なし）
     assert len(job_ids) == 2
-    assert "departure_call1_U1234567890abcdef1234567890abcdef" in job_ids
-    assert "departure_call2_U1234567890abcdef1234567890abcdef" not in job_ids
-    assert "departure_final_U1234567890abcdef1234567890abcdef" in job_ids
+    assert "departure_call1_2026-01-08_U1234567890abcdef1234567890abcdef" in job_ids
+    assert "departure_call2_2026-01-08_U1234567890abcdef1234567890abcdef" not in job_ids
+    assert "departure_final_2026-01-08_U1234567890abcdef1234567890abcdef" in job_ids
 
 
 def test_full_mode_phone_service_with_call2() -> None:
@@ -199,6 +199,6 @@ def test_full_mode_phone_service_with_call2() -> None:
 
         # enable_phone_call2=Trueの場合、電話①、電話②、最終確認の3つ
         assert len(job_ids) == 3
-        assert "departure_call1_U1234567890abcdef1234567890abcdef" in job_ids
-        assert "departure_call2_U1234567890abcdef1234567890abcdef" in job_ids
-        assert "departure_final_U1234567890abcdef1234567890abcdef" in job_ids
+        assert "departure_call1_2026-01-08_U1234567890abcdef1234567890abcdef" in job_ids
+        assert "departure_call2_2026-01-08_U1234567890abcdef1234567890abcdef" in job_ids
+        assert "departure_final_2026-01-08_U1234567890abcdef1234567890abcdef" in job_ids

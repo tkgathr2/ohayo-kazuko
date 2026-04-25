@@ -2,7 +2,6 @@
 from datetime import datetime, time
 from typing import Optional
 
-import pytz
 from zoneinfo import ZoneInfo
 
 from app.models import DepartureStatus, WakeupStatus

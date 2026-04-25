@@ -1,4 +1,5 @@
-﻿import json
+﻿import html
+import json
 from typing import Optional
 
 import httpx
@@ -17,7 +18,7 @@ class TwilioService:
     async def make_call(self, phone_number: str, message: str) -> Optional[str]:
         url = f"https://api.twilio.com/2010-04-01/Accounts/{self._settings.twilio_account_sid}/Calls.json"
         auth = (self._settings.twilio_account_sid, self._settings.twilio_auth_token.get_secret_value())
-        twiml = f"<Response><Say language=\"ja-JP\">{message}</Say></Response>"
+        twiml = f"<Response><Say language=\"ja-JP\">{html.escape(message)}</Say></Response>"
         data = {"To": phone_number, "From": self._settings.twilio_phone_number, "Twiml": twiml}
 
         async def send() -> httpx.Response:
